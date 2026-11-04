@@ -48,7 +48,10 @@ export function AuthProvider({ children }: { children?: ReactNode }) {
       await logoutRequest()
       setUser(null)
     },
-    clear: () => setUser(null),
+    clear: () => {
+      setUser(null)
+      void logoutRequest().catch(() => undefined)
+    },
   }
 
   return (

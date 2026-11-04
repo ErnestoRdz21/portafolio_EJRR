@@ -1,32 +1,36 @@
-import type { Certification } from '../types/portfolio.ts'
-import { ApiError, requestJson } from './api.ts'
 import {
-  isRecord,
-  readData,
-  readNullableString,
-  readNumber,
-  readString,
-} from './parse.ts'
+  asDateOnly,
+  asId,
+  asNullableString,
+  asRecords,
+  asString,
+  raise,
+} from '../lib/rows.ts'
+import { bindSignal, getSupabase } from '../lib/supabase.ts'
+import type { Certification } from '../types/portfolio.ts'
 
 export async function getCertifications(
   signal?: AbortSignal,
 ): Promise<Certification[]> {
-  const body = await requestJson('/api/certifications', signal)
+  const { data, error } = await bindSignal(
+    getSupabase()
+      .from('certifications')
+      .select('id,name,issuer,issued_at,credential_url,image_path')
+      .eq('is_published', true)
+      .order('sort_order', { ascending: true })
+      .order('issued_at', { ascending: false, nullsFirst: false })
+      .order('id', { ascending: true }),
+    signal,
+  )
 
-  return readData(body).map(readCertification)
-}
+  raise(error, signal)
 
-function readCertification(value: unknown): Certification {
-  if (!isRecord(value)) {
-    throw new ApiError('La respuesta del backend no tiene el formato esperado.')
-  }
-
-  return {
-    id: readNumber(value.id),
-    name: readString(value.name),
-    issuer: readNullableString(value.issuer),
-    issued_at: readNullableString(value.issued_at),
-    credential_url: readNullableString(value.credential_url),
-    image_path: readNullableString(value.image_path),
-  }
+  return asRecords(data).map((row) => ({
+    id: asId(row.id),
+    name: asString(row.name),
+    issuer: asNullableString(row.issuer),
+    issued_at: asDateOnly(row.issued_at),
+    credential_url: asNullableString(row.credential_url),
+    image_path: asNullableString(row.image_path),
+  }))
 }

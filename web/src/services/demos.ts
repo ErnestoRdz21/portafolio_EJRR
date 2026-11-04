@@ -1,12 +1,15 @@
-import { ApiError, requestJson, sendJson } from './api.ts'
 import {
-  isRecord,
-  readData,
-  readDataRecord,
-  readNullableString,
-  readNumber,
-  readString,
-} from './parse.ts'
+  asDateOnly,
+  asId,
+  asNullableString,
+  asRecord,
+  asRecords,
+  asString,
+  asTimestamp,
+  raise,
+} from '../lib/rows.ts'
+import { bindSignal, getSupabase } from '../lib/supabase.ts'
+import { ApiError } from './api.ts'
 
 export type DemoShipment = {
   id: number
@@ -58,174 +61,362 @@ export type DemoConversationDetail = Omit<DemoConversation, 'preview'> & {
   messages: DemoMessage[]
 }
 
-export function getDemoShipments(
+const SHIPMENT_STATUSES = [
+  'created',
+  'picked_up',
+  'in_transit',
+  'out_for_delivery',
+  'delivered',
+  'exception',
+] as const
+
+const NOTIFICATION_CHANNELS = ['email', 'whatsapp'] as const
+const NOTIFICATION_STATUSES = ['pending', 'sent', 'failed'] as const
+const CONVERSATION_STATUSES = ['open', 'pending', 'closed'] as const
+
+export async function getDemoShipments(
   query: string,
   signal?: AbortSignal,
 ): Promise<ShipmentDashboard> {
-  const path = query ? `/api/demo/shipments?${query}` : '/api/demo/shipments'
+  const params = new URLSearchParams(query)
+  const status = optional(params.get('status'), SHIPMENT_STATUSES, 'status')
+  const carrier = bounded(params.get('carrier'), 120)
+  const search = bounded(params.get('search'), 120)
 
-  return requestJson(path, signal).then(readShipmentDashboard)
-}
+  let shipmentsQuery = getSupabase()
+    .from('demo_shipments')
+    .select(
+      'id,tracking_number,customer_name,origin,destination,carrier,status,estimated_delivery',
+    )
+    .order('id', { ascending: true })
 
-export function getDemoNotifications(
-  query: string,
-  signal?: AbortSignal,
-): Promise<DemoNotification[]> {
-  const path = query
-    ? `/api/demo/notifications?${query}`
-    : '/api/demo/notifications'
-
-  return requestJson(path, signal).then((body) =>
-    readData(body).map(readNotification),
-  )
-}
-
-export function simulateDemoNotification(
-  id: number,
-  signal?: AbortSignal,
-): Promise<DemoNotification> {
-  return sendJson(
-    `/api/demo/notifications/${id}/simulate`,
-    'POST',
-    {},
-    signal,
-  ).then((body) => readNotification(readDataRecord(body)))
-}
-
-export function getDemoConversations(
-  query: string,
-  signal?: AbortSignal,
-): Promise<DemoConversation[]> {
-  const path = query
-    ? `/api/demo/conversations?${query}`
-    : '/api/demo/conversations'
-
-  return requestJson(path, signal).then((body) =>
-    readData(body).map(readConversation),
-  )
-}
-
-export function getDemoConversation(
-  id: number,
-  signal?: AbortSignal,
-): Promise<DemoConversationDetail> {
-  return requestJson(`/api/demo/conversations/${id}`, signal).then((body) =>
-    readConversationDetail(readDataRecord(body)),
-  )
-}
-
-export function updateDemoConversationStatus(
-  id: number,
-  status: string,
-  signal?: AbortSignal,
-): Promise<DemoConversationDetail> {
-  return sendJson(
-    `/api/demo/conversations/${id}`,
-    'PATCH',
-    { status },
-    signal,
-  ).then((body) => readConversationDetail(readDataRecord(body)))
-}
-
-function readShipmentDashboard(body: unknown): ShipmentDashboard {
-  if (!isRecord(body) || !isRecord(body.meta)) {
-    throw new ApiError('La respuesta del backend no tiene el formato esperado.')
+  if (status) {
+    shipmentsQuery = shipmentsQuery.eq('status', status)
   }
 
-  const carriers = body.meta.carriers
-
-  if (
-    !Array.isArray(carriers) ||
-    carriers.some((item) => typeof item !== 'string')
-  ) {
-    throw new ApiError('La respuesta del backend no tiene el formato esperado.')
+  if (carrier) {
+    shipmentsQuery = shipmentsQuery.eq('carrier', carrier)
   }
+
+  if (search) {
+    shipmentsQuery = shipmentsQuery.or(
+      ilikeAny(
+        ['tracking_number', 'customer_name', 'origin', 'destination'],
+        search,
+      ),
+    )
+  }
+
+  const [shipmentsResult, carriersResult] = await Promise.all([
+    bindSignal(shipmentsQuery, signal),
+    bindSignal(
+      getSupabase()
+        .from('demo_shipments')
+        .select('carrier')
+        .order('carrier', { ascending: true }),
+      signal,
+    ),
+  ])
+
+  raise(shipmentsResult.error, signal)
+  raise(carriersResult.error, signal)
+
+  const shipments = asRecords(shipmentsResult.data).map(readShipment)
+  const carriers = uniqueStrings(
+    asRecords(carriersResult.data).map((row) => asString(row.carrier)),
+  )
 
   return {
-    shipments: readData(body).map(readShipment),
-    total: readNumber(body.meta.total),
-    inTransit: readNumber(body.meta.in_transit),
-    delivered: readNumber(body.meta.delivered),
-    exceptions: readNumber(body.meta.exceptions),
+    shipments,
+    total: shipments.length,
+    inTransit: shipments.filter((item) => item.status === 'in_transit').length,
+    delivered: shipments.filter((item) => item.status === 'delivered').length,
+    exceptions: shipments.filter((item) => item.status === 'exception').length,
     carriers,
   }
 }
 
-function readShipment(value: unknown): DemoShipment {
-  const row = readRow(value)
+export async function getDemoNotifications(
+  query: string,
+  signal?: AbortSignal,
+): Promise<DemoNotification[]> {
+  const params = new URLSearchParams(query)
+  const channel = optional(
+    params.get('channel'),
+    NOTIFICATION_CHANNELS,
+    'channel',
+  )
+  const status = optional(params.get('status'), NOTIFICATION_STATUSES, 'status')
 
+  let notifications = getSupabase()
+    .from('demo_notifications')
+    .select('id,event,channel,recipient,status,sent_at')
+    .order('id', { ascending: true })
+
+  if (channel) {
+    notifications = notifications.eq('channel', channel)
+  }
+
+  if (status) {
+    notifications = notifications.eq('status', status)
+  }
+
+  const { data, error } = await bindSignal(notifications, signal)
+  raise(error, signal)
+
+  return asRecords(data).map(readNotification)
+}
+
+export async function simulateDemoNotification(
+  id: number,
+  signal?: AbortSignal,
+): Promise<DemoNotification> {
+  let query = getSupabase()
+    .from('demo_notifications')
+    .update({
+      status: 'sent',
+      sent_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .select('id,event,channel,recipient,status,sent_at')
+
+  if (signal) {
+    query = query.abortSignal(signal)
+  }
+
+  const { data, error } = await query.maybeSingle()
+
+  raise(error, signal)
+
+  if (!data) {
+    throw new ApiError('No se encontró el recurso.', 404)
+  }
+
+  return readNotification(asRecord(data))
+}
+
+export async function getDemoConversations(
+  query: string,
+  signal?: AbortSignal,
+): Promise<DemoConversation[]> {
+  const params = new URLSearchParams(query)
+  const search = bounded(params.get('search'), 120)
+  let conversations = getSupabase()
+    .from('demo_conversations')
+    .select(
+      'id,customer_name,customer_identifier,status,assigned_to,last_message_at,demo_messages(id,content,sent_at)',
+    )
+    .order('last_message_at', { ascending: false, nullsFirst: true })
+    .order('id', { ascending: false })
+
+  if (search) {
+    conversations = conversations.or(
+      ilikeAny(['customer_name', 'customer_identifier'], search),
+    )
+  }
+
+  const { data, error } = await bindSignal(conversations, signal)
+  raise(error, signal)
+
+  return asRecords(data).map(readConversation)
+}
+
+export async function getDemoConversation(
+  id: number,
+  signal?: AbortSignal,
+): Promise<DemoConversationDetail> {
+  let query = getSupabase()
+    .from('demo_conversations')
+    .select(
+      'id,customer_name,customer_identifier,status,assigned_to,last_message_at,demo_messages(id,sender_type,content,sent_at)',
+    )
+    .eq('id', id)
+
+  if (signal) {
+    query = query.abortSignal(signal)
+  }
+
+  const { data, error } = await query.maybeSingle()
+
+  raise(error, signal)
+
+  if (!data) {
+    throw new ApiError('No se encontró el recurso.', 404)
+  }
+
+  return readConversationDetail(asRecord(data))
+}
+
+export async function updateDemoConversationStatus(
+  id: number,
+  status: string,
+  signal?: AbortSignal,
+): Promise<DemoConversationDetail> {
+  if (
+    !CONVERSATION_STATUSES.includes(
+      status as (typeof CONVERSATION_STATUSES)[number],
+    )
+  ) {
+    throw new ApiError('El estado no es válido.', 422)
+  }
+
+  let query = getSupabase()
+    .from('demo_conversations')
+    .update({ status })
+    .eq('id', id)
+    .select(
+      'id,customer_name,customer_identifier,status,assigned_to,last_message_at,demo_messages(id,sender_type,content,sent_at)',
+    )
+
+  if (signal) {
+    query = query.abortSignal(signal)
+  }
+
+  const { data, error } = await query.maybeSingle()
+
+  raise(error, signal)
+
+  if (!data) {
+    throw new ApiError('No se encontró el recurso.', 404)
+  }
+
+  return readConversationDetail(asRecord(data))
+}
+
+function readShipment(row: Record<string, unknown>): DemoShipment {
   return {
-    id: readNumber(row.id),
-    tracking_number: readString(row.tracking_number),
-    customer: readString(row.customer),
-    origin: readString(row.origin),
-    destination: readString(row.destination),
-    carrier: readString(row.carrier),
-    status: readString(row.status),
-    estimated_delivery: readNullableString(row.estimated_delivery),
+    id: asId(row.id),
+    tracking_number: asString(row.tracking_number),
+    customer: asString(row.customer_name),
+    origin: asString(row.origin),
+    destination: asString(row.destination),
+    carrier: asString(row.carrier),
+    status: asString(row.status),
+    estimated_delivery: asDateOnly(row.estimated_delivery),
   }
 }
 
-function readNotification(value: unknown): DemoNotification {
-  const row = readRow(value)
-
+function readNotification(row: Record<string, unknown>): DemoNotification {
   return {
-    id: readNumber(row.id),
-    event: readString(row.event),
-    channel: readString(row.channel),
-    recipient: readString(row.recipient),
-    status: readString(row.status),
-    sent_at: readNullableString(row.sent_at),
+    id: asId(row.id),
+    event: asString(row.event),
+    channel: asString(row.channel),
+    recipient: asString(row.recipient),
+    status: asString(row.status),
+    sent_at: asTimestamp(row.sent_at),
   }
 }
 
-function readConversation(value: unknown): DemoConversation {
-  const row = readRow(value)
+function readConversation(row: Record<string, unknown>): DemoConversation {
+  const messages = asRecords(row.demo_messages)
+  const preview = latestContent(messages)
 
   return {
-    id: readNumber(row.id),
-    customer_name: readString(row.customer_name),
-    customer_identifier: readNullableString(row.customer_identifier),
-    status: readString(row.status),
-    assigned_to: readNullableString(row.assigned_to),
-    last_message_at: readNullableString(row.last_message_at),
-    preview: readNullableString(row.preview),
+    id: asId(row.id),
+    customer_name: asString(row.customer_name),
+    customer_identifier: asNullableString(row.customer_identifier),
+    status: asString(row.status),
+    assigned_to: asNullableString(row.assigned_to),
+    last_message_at: asTimestamp(row.last_message_at),
+    preview,
   }
 }
 
 function readConversationDetail(
   row: Record<string, unknown>,
 ): DemoConversationDetail {
-  if (!Array.isArray(row.messages)) {
-    throw new ApiError('La respuesta del backend no tiene el formato esperado.')
-  }
+  const summary = readConversation(row)
 
   return {
-    id: readNumber(row.id),
-    customer_name: readString(row.customer_name),
-    customer_identifier: readNullableString(row.customer_identifier),
-    status: readString(row.status),
-    assigned_to: readNullableString(row.assigned_to),
-    last_message_at: readNullableString(row.last_message_at),
-    messages: row.messages.map(readMessage),
+    id: summary.id,
+    customer_name: summary.customer_name,
+    customer_identifier: summary.customer_identifier,
+    status: summary.status,
+    assigned_to: summary.assigned_to,
+    last_message_at: summary.last_message_at,
+    messages: asRecords(row.demo_messages)
+      .map(readMessage)
+      .sort((left, right) => {
+        const leftTime = left.sent_at ?? ''
+        const rightTime = right.sent_at ?? ''
+
+        return leftTime.localeCompare(rightTime) || left.id - right.id
+      }),
   }
 }
 
-function readMessage(value: unknown): DemoMessage {
-  const row = readRow(value)
-
+function readMessage(row: Record<string, unknown>): DemoMessage {
   return {
-    id: readNumber(row.id),
-    sender_type: readString(row.sender_type),
-    content: readString(row.content),
-    sent_at: readNullableString(row.sent_at),
+    id: asId(row.id),
+    sender_type: asString(row.sender_type),
+    content: asString(row.content),
+    sent_at: asTimestamp(row.sent_at),
   }
 }
 
-function readRow(value: unknown): Record<string, unknown> {
-  if (!isRecord(value)) {
-    throw new ApiError('La respuesta del backend no tiene el formato esperado.')
+function latestContent(messages: Record<string, unknown>[]): string | null {
+  let best: { id: number; sent_at: string; content: string } | null = null
+
+  for (const row of messages) {
+    const candidate = {
+      id: asId(row.id),
+      sent_at: asTimestamp(row.sent_at) ?? '',
+      content: asString(row.content),
+    }
+
+    if (
+      !best ||
+      candidate.sent_at > best.sent_at ||
+      (candidate.sent_at === best.sent_at && candidate.id > best.id)
+    ) {
+      best = candidate
+    }
+  }
+
+  return best?.content ?? null
+}
+
+function optional<T extends string>(
+  value: string | null,
+  allowed: readonly T[],
+  label: string,
+): T | null {
+  if (!value) {
+    return null
+  }
+
+  if (value.length > 120 || !allowed.includes(value as T)) {
+    throw new ApiError(`El filtro ${label} no es válido.`, 422)
+  }
+
+  return value as T
+}
+
+function bounded(value: string | null, max: number): string | null {
+  if (!value) {
+    return null
+  }
+
+  if (value.length > max) {
+    throw new ApiError('El filtro de búsqueda no es válido.', 422)
   }
 
   return value
+}
+
+function ilikeAny(columns: string[], raw: string): string {
+  const pattern = `"*${escapeIlike(raw)}*"`
+
+  return columns.map((column) => `${column}.ilike.${pattern}`).join(',')
+}
+
+function escapeIlike(value: string): string {
+  return value
+    .replace(/\\/g, '\\\\')
+    .replace(/[%_]/g, (char) => `\\${char}`)
+    .replace(/[*"(),]/g, '')
+}
+
+function uniqueStrings(values: string[]): string[] {
+  return [...new Set(values)]
 }

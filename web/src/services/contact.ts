@@ -1,6 +1,6 @@
-import { ApiError, apiUrl } from './api.ts'
-import { csrfHeaders, ensureCsrf, FieldErrors } from './admin/http.ts'
-import { isRecord } from './parse.ts'
+import { ApiError } from './api.ts'
+import { FieldErrors } from './admin/http.ts'
+import { isRecord } from '../lib/rows.ts'
 
 export type ContactInput = {
   name: string
@@ -11,18 +11,14 @@ export type ContactInput = {
 }
 
 export async function sendContact(input: ContactInput): Promise<void> {
-  await ensureCsrf()
-
   let response: Response
 
   try {
-    response = await fetch(apiUrl('/api/contact'), {
+    response = await fetch('/api/contact', {
       method: 'POST',
-      credentials: 'include',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        ...csrfHeaders(),
       },
       body: JSON.stringify({
         name: input.name,
@@ -53,7 +49,10 @@ export async function sendContact(input: ContactInput): Promise<void> {
     )
   }
 
-  throw new ApiError('No se pudo enviar el mensaje. Inténtalo de nuevo.', response.status)
+  throw new ApiError(
+    'No se pudo enviar el mensaje. Inténtalo de nuevo.',
+    response.status,
+  )
 }
 
 async function readPayload(response: Response): Promise<unknown> {

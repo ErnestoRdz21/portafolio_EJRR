@@ -43,12 +43,6 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), tailwindcss(), sitemapPlugin(env.VITE_SITE_URL)],
-    server: {
-      proxy: {
-        '/api': { target: 'http://127.0.0.1:8000', changeOrigin: true },
-        '/sanctum': { target: 'http://127.0.0.1:8000', changeOrigin: true },
-      },
-    },
     test: {
       environment: 'jsdom',
       setupFiles: './src/test/setup.ts',

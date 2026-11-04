@@ -1,62 +1,54 @@
 # Ernesto Rodríguez — Portfolio
 
-Portafolio de Ernesto Jahir Rodríguez Ramírez, Full Stack Developer. Una SPA en React que consume una API REST en Laravel, con base de datos y almacenamiento de imágenes en Supabase.
+Portafolio de Ernesto Jahir Rodríguez Ramírez, Full Stack Developer. Una SPA en React que lee y escribe Supabase (PostgreSQL, Storage y Auth). El hosting del sitio es Vercel.
 
 **Live Portfolio:** [portafolio-ejrr.vercel.app](https://portafolio-ejrr.vercel.app)
 
 ## Stack
 
-- **Backend:** Laravel 13, PHP 8.4+, REST API, Sanctum
-- **Frontend:** React 19, TypeScript, Vite, Tailwind CSS
-- **Datos:** PostgreSQL (Supabase), Supabase Storage
+- **Frontend:** React 19, TypeScript, Vite, Tailwind CSS, en Vercel
+- **Datos:** Supabase PostgreSQL, con RLS
+- **Auth del admin:** Supabase Auth
+- **Imágenes:** Supabase Storage, bucket `portfolio`
+- **Contacto:** función serverless en `web/api/contact.ts` (solo si se vuelve a encender el formulario)
+- **API Laravel:** queda en `api/` hasta apagar Railway. El navegador ya no la usa.
 
 ## Arquitectura
 
 ```
 portfolio/
-  web/    React + TypeScript + Vite
-  api/    Laravel REST API
-  docs/   Documentación
+  web/        React + funciones /api de Vercel
+  supabase/   SQL de RLS para correr en el SQL Editor
+  api/        Laravel (legado, no lo llama el frontend)
+  docs/       Documentación
 ```
 
-React consume la API REST en Laravel para los datos de la aplicación. Laravel gestiona el acceso a PostgreSQL y la integración con Supabase Storage.
+El navegador usa `@supabase/supabase-js` con la anon key. La anon key solo puede lo que permiten las políticas. La service role key no entra al build: vive solo en Vercel, para `POST /api/contact`.
+
 ## Funcionalidades
 
 - Portafolio público: Home, Work y About.
 - Case studies de proyectos con galería de capturas.
 - Mini demos interactivas con datos ficticios.
-- Panel de administración con Sanctum: proyectos, imágenes y certificaciones.
+- Panel de administración: proyectos, imágenes, certificaciones y mensajes.
 - Imágenes servidas desde Supabase Storage.
-- API pública de solo lectura: proyectos, tecnologías y certificaciones.
 - Modo oscuro y diseño responsive.
 
 ## Deployment
 
 | Capa | Servicio |
 | --- | --- |
-| Frontend | Vercel |
-| Backend | Railway (temporal) |
+| Frontend y `/api/contact` | Vercel |
 | Base de datos | Supabase PostgreSQL |
 | Storage | Supabase Storage |
+| Auth | Supabase Auth |
+| Backend Laravel | Railway, apagarlo después del corte |
+
+El corte está en [docs/deployment.md](docs/deployment.md). El SQL está en [supabase/migrations/20261104120000_rls_public_read_admin_write.sql](supabase/migrations/20261104120000_rls_public_read_admin_write.sql).
 
 ## Desarrollo local
 
-Requisitos: PHP 8.4+ con `pdo_pgsql`, Composer 2, Node.js 24 y npm.
-
-API:
-
-```bash
-cd api
-composer install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate --seed
-php artisan serve
-```
-
-Configura la conexión a la base en `api/.env` antes de migrar. Para crear el usuario del admin: `php artisan portfolio:create-admin`.
-
-Frontend:
+Requisitos: Node.js 22+ y npm. PHP solo hace falta si vas a tocar el Laravel que queda en el repo.
 
 ```bash
 cd web
@@ -65,11 +57,11 @@ cp .env.example .env
 npm run dev
 ```
 
-En desarrollo, Vite redirige `/api` y `/sanctum` a la API local.
+Completa `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en `web/.env`. Sin eso, las pantallas que leen datos muestran el error de configuración.
 
-Pruebas: `php artisan test` en `api/` y `npm run test` en `web/`.
+Pruebas: `npm run test` y `npm run build` en `web/`.
 
-Más detalle en [docs/](docs/): [arquitectura](docs/arquitectura.md), [deployment](docs/deployment.md), [admin](docs/admin.md), [case studies](docs/case-studies.md) y [demos](docs/demos.md).
+Más detalle en [docs/](docs/): [arquitectura](docs/arquitectura.md), [deployment](docs/deployment.md), [admin](docs/admin.md), [supabase](docs/supabase-setup.md), [case studies](docs/case-studies.md) y [demos](docs/demos.md).
 
 ## Autor
 

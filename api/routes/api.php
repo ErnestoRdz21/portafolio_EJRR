@@ -1,5 +1,9 @@
 <?php
 
+// El frontend ya no llama a esta API: lee y escribe Supabase directo.
+// Se puede borrar api/ cuando Railway esté apagado y el sitio en Vercel esté verificado.
+// Ver supabase/migrations y docs/deployment.md.
+
 use App\Http\Controllers\Admin\CertificationController as AdminCertificationController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MessageController;

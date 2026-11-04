@@ -1,71 +1,53 @@
 # Arquitectura
 
-El navegador habla solo con la API de Laravel. Laravel es el único cliente de PostgreSQL y de Storage.
+El navegador habla con Supabase. No pasa por Laravel.
 
 ```
 React (web/)
-    ↓  REST
-Laravel (api/)
-    ↓
-PostgreSQL
-    ↓
-Storage
+    ↓  @supabase/supabase-js  (anon key + JWT del admin)
+Supabase
+    PostgreSQL   RLS: lectura pública de lo publicado, escritura solo si public.is_admin()
+    Storage      bucket portfolio, lectura pública, escritura del admin
+    Auth         un usuario, fila en public.admins
 
-Queue (database) → Mail
+POST /api/contact  →  función Vercel (web/api/contact.ts)
+    ↓  service role, solo en el servidor
+contact_messages
 ```
 
-En local, PostgreSQL puede sustituirse por SQLite y Storage por el disco `public`. Supabase queda preparado en variables de entorno, sin credenciales en el repositorio.
+La anon key va en `VITE_SUPABASE_ANON_KEY`. La service role key va en `SUPABASE_SERVICE_ROLE_KEY` de Vercel y no lleva prefijo `VITE_`.
 
-`GET /api/health` comprueba que la API HTTP responde. No consulta la base de datos.
+`api/` es el Laravel que antes servía Railway. El frontend ya no lo llama. Se puede borrar el directorio, el servicio de Railway y las variables `VITE_API_URL` cuando el sitio en Vercel esté comprobado. Hasta entonces Railway puede seguir encendido: el rol `postgres` no queda bloqueado por RLS.
 
-La configuración de Postgres y de Supabase vive en variables de entorno (`api/.env.example`). No hay claves en el repositorio. El frontend no recibe `SUPABASE_SERVICE_ROLE_KEY` ni usa Supabase para leer o escribir datos.
+## Qué lee el sitio público
 
-CORS acepta únicamente `FRONTEND_URL`.
+Con la sesión anónima, y además filtrando `is_published` en el cliente:
 
-Docker no está incluido. Se añadirá cuando haga falta para el entorno local o el despliegue.
+- `projects`, sus `technologies` y `project_images`
+- `technologies`
+- `certifications`
+- tablas `demo_*` (datos ficticios)
 
-## Persistencia
+Un proyecto no publicado no entra en la consulta pública. Si quien navega tiene sesión de admin, la consulta pública sigue pidiendo `is_published = true`, así que el portafolio no enseña borradores.
 
-Las migraciones del portafolio viven en `api/database/migrations`. Los modelos Eloquent están en `api/app/Models`.
+## Qué escribe el admin
 
-```
-projects  >──<  technologies
-    │              (project_technology)
-    └──< project_images
+La sesión de Supabase Auth autoriza, y RLS exige una fila en `public.admins`:
 
-demo_conversations ──< demo_messages
-```
+- proyectos, tecnologías del proyecto e imágenes (también el archivo en Storage)
+- certificaciones
+- estado de `contact_messages` (`new`, `read`, `archived`)
 
-También existen `certifications`, `contact_messages`, `demo_shipments` y `demo_notifications`. No tienen relación con otras tablas del portafolio.
+No hay registro público. El alta del admin es manual.
 
-Para crear el esquema y los datos ficticios:
+## Demos
 
-```bash
-cd api
-php artisan migrate:fresh --seed
-```
+Las demos leen con la anon key. Simular un envío actualiza `demo_notifications.status` y `sent_at`. Cambiar el estado de una conversación actualiza `demo_conversations.status`. No hay alta ni borrado público de esas filas. Siguen siendo datos ficticios.
 
-Con Supabase, `DB_CONNECTION` es `pgsql` y `DB_SSLMODE` es `require`. Sin credenciales, el mismo comando corre sobre SQLite si `DB_CONNECTION=sqlite`. Las pruebas de PHPUnit no usan ninguna de las dos: migran SQLite en memoria.
+## Contacto
 
-`certifications.issuer` es nullable. Si el emisor no se conoce, se guarda `null`.
+El formulario está apagado con `VITE_CONTACT_FORM_ENABLED`. Si se enciende, el navegador hace `POST /api/contact` en el mismo origen de Vercel. La función valida, aplica el honeypot `website`, limita 5 envíos por minuto e IP e inserta con la service role. No manda correo: el aviso SMTP vivía en Laravel. El mensaje queda en `contact_messages`.
 
-## Cola y correo
+## Laravel
 
-`POST /api/contact` guarda el mensaje y despacha `SendContactNotification`. Con `QUEUE_CONNECTION=database` el formulario responde aunque el correo tarde. El job lee `PORTFOLIO_CONTACT_EMAIL`. En local, `MAIL_MAILER=log` escribe el aviso en el log. El detalle está en [contact.md](contact.md).
-
-## Storage
-
-Las imágenes de proyectos se suben desde el admin al disco `PORTFOLIO_MEDIA_DISK` (`public` en local). La API devuelve `url` cuando el archivo existe. El navegador no habla con Supabase.
-
-## API pública
-
-React consume estos endpoints a través de `web/src/services/`:
-
-- `GET /api/health`
-- `GET /api/projects`
-- `GET /api/projects?featured=1`
-- `GET /api/projects/{slug}`
-- `GET /api/technologies`
-- `GET /api/certifications`
-
-El listado y el detalle de proyectos cargan tecnologías e imágenes en la misma petición, no una consulta por registro. Un proyecto no publicado responde 404. Los ejemplos de JSON están en el README, sección Public API.
+Rutas, modelos y migraciones de `api/` describen el esquema que ya está en Supabase. No las vuelvas a ejecutar con `migrate:fresh` contra ese proyecto. El SQL nuevo solo añade RLS, `public.admins`, el trigger de una sola portada y las políticas del bucket.

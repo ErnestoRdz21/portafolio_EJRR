@@ -1,64 +1,113 @@
+import {
+  asBoolean,
+  asId,
+  asNullableString,
+  asRecord,
+  asRecords,
+  asString,
+  bySortThenId,
+  pickCover,
+  raise,
+  storagePublicUrl,
+} from '../lib/rows.ts'
+import {
+  bindSignal,
+  getSupabase,
+  storageBaseUrl,
+  storageBucket,
+} from '../lib/supabase.ts'
 import type {
   ProjectDetail,
   ProjectImage,
   ProjectListItem,
 } from '../types/portfolio.ts'
-import { ApiError, requestJson } from './api.ts'
-import {
-  isRecord,
-  readBoolean,
-  readData,
-  readDataRecord,
-  readNullableString,
-  readNumber,
-  readString,
-} from './parse.ts'
-import { readTechnology } from './technologies.ts'
+import { ApiError } from './api.ts'
+import { sortTechnologies } from './technologies.ts'
+
+const TECHNOLOGY_EMBED = 'technologies(id,name,slug,category,sort_order)'
+const IMAGE_EMBED =
+  'project_images(id,path,alt_text,caption,sort_order,is_cover)'
+
+const LIST_COLUMNS = `id,slug,title,subtitle,summary,role,period,is_featured,${TECHNOLOGY_EMBED},${IMAGE_EMBED}`
+const DETAIL_COLUMNS = `id,slug,title,subtitle,summary,context,problem,solution,responsibilities,technical_decisions,challenges,results,learnings,role,period,${TECHNOLOGY_EMBED},${IMAGE_EMBED}`
 
 export function getFeaturedProjects(
   signal?: AbortSignal,
 ): Promise<ProjectListItem[]> {
-  return fetchProjectList('/api/projects?featured=1', signal)
+  return fetchProjectList(true, signal)
 }
 
 export function getProjects(signal?: AbortSignal): Promise<ProjectListItem[]> {
-  return fetchProjectList('/api/projects', signal)
+  return fetchProjectList(false, signal)
 }
 
 async function fetchProjectList(
-  path: string,
+  featuredOnly: boolean,
   signal?: AbortSignal,
 ): Promise<ProjectListItem[]> {
-  const body = await requestJson(path, signal)
+  let query = getSupabase()
+    .from('projects')
+    .select(LIST_COLUMNS)
+    .eq('is_published', true)
+    .order('sort_order', { ascending: true })
+    .order('id', { ascending: true })
 
-  return readData(body).map(readProjectListItem)
+  if (featuredOnly) {
+    query = query.eq('is_featured', true)
+  }
+
+  const { data, error } = await bindSignal(query, signal)
+  raise(error, signal)
+
+  return asRecords(data).map(readProjectListItem)
 }
 
 export async function getProject(
   slug: string,
   signal?: AbortSignal,
 ): Promise<ProjectDetail> {
-  const body = await requestJson(
-    `/api/projects/${encodeURIComponent(slug)}`,
-    signal,
-  )
+  let query = getSupabase()
+    .from('projects')
+    .select(DETAIL_COLUMNS)
+    .eq('slug', slug)
+    .eq('is_published', true)
 
-  return readProjectDetail(readDataRecord(body))
+  if (signal) {
+    query = query.abortSignal(signal)
+  }
+
+  const { data, error } = await query.maybeSingle()
+
+  raise(error, signal)
+
+  if (!data) {
+    throw new ApiError('No se encontró el recurso.', 404)
+  }
+
+  return readProjectDetail(asRecord(data))
 }
 
 function readProjectListItem(value: unknown): ProjectListItem {
-  const record = readProjectBase(value)
+  const row = asRecord(value)
+  const images = readImages(row.project_images)
+  const cover = pickCover(images)
 
   return {
-    ...record,
-    is_featured: readBoolean(record.is_featured),
-    cover_image:
-      record.cover_image === null ? null : readProjectImage(record.cover_image),
+    id: asId(row.id),
+    slug: asString(row.slug),
+    title: asString(row.title),
+    subtitle: asNullableString(row.subtitle),
+    summary: asString(row.summary),
+    role: asNullableString(row.role),
+    period: asNullableString(row.period),
+    is_featured: asBoolean(row.is_featured),
+    cover_image: cover,
+    technologies: sortTechnologies(asRecords(row.technologies)),
   }
 }
 
-function readProjectDetail(record: Record<string, unknown>): ProjectDetail {
-  const base = readProjectBase(record)
+function readProjectDetail(row: Record<string, unknown>): ProjectDetail {
+  const base = readProjectListItem(row)
 
   return {
     id: base.id,
@@ -66,60 +115,35 @@ function readProjectDetail(record: Record<string, unknown>): ProjectDetail {
     title: base.title,
     subtitle: base.subtitle,
     summary: base.summary,
-    context: readNullableString(record.context),
-    problem: readNullableString(record.problem),
-    solution: readNullableString(record.solution),
-    responsibilities: readNullableString(record.responsibilities),
-    technical_decisions: readNullableString(record.technical_decisions),
-    challenges: readNullableString(record.challenges),
-    results: readNullableString(record.results),
-    learnings: readNullableString(record.learnings),
+    context: asNullableString(row.context),
+    problem: asNullableString(row.problem),
+    solution: asNullableString(row.solution),
+    responsibilities: asNullableString(row.responsibilities),
+    technical_decisions: asNullableString(row.technical_decisions),
+    challenges: asNullableString(row.challenges),
+    results: asNullableString(row.results),
+    learnings: asNullableString(row.learnings),
     role: base.role,
     period: base.period,
     technologies: base.technologies,
-    images: readImages(record.images),
-  }
-}
-
-function readProjectBase(value: unknown) {
-  if (!isRecord(value) || !Array.isArray(value.technologies)) {
-    throw new ApiError('La respuesta del backend no tiene el formato esperado.')
-  }
-
-  return {
-    id: readNumber(value.id),
-    slug: readString(value.slug),
-    title: readString(value.title),
-    subtitle: readNullableString(value.subtitle),
-    summary: readString(value.summary),
-    role: readNullableString(value.role),
-    period: readNullableString(value.period),
-    technologies: value.technologies.map(readTechnology),
-    is_featured: value.is_featured,
-    cover_image: value.cover_image,
+    images: readImages(row.project_images),
   }
 }
 
 function readImages(value: unknown): ProjectImage[] {
-  if (!Array.isArray(value)) {
-    throw new ApiError('La respuesta del backend no tiene el formato esperado.')
-  }
-
-  return value.map(readProjectImage)
+  return asRecords(value).map(readProjectImage).sort(bySortThenId)
 }
 
-function readProjectImage(value: unknown): ProjectImage {
-  if (!isRecord(value)) {
-    throw new ApiError('La respuesta del backend no tiene el formato esperado.')
-  }
+function readProjectImage(row: Record<string, unknown>): ProjectImage {
+  const path = asString(row.path)
 
   return {
-    id: readNumber(value.id),
-    path: readString(value.path),
-    url: 'url' in value ? readNullableString(value.url) : null,
-    alt_text: readNullableString(value.alt_text),
-    caption: readNullableString(value.caption),
-    sort_order: readNumber(value.sort_order),
-    is_cover: readBoolean(value.is_cover),
+    id: asId(row.id),
+    path,
+    url: storagePublicUrl(path, storageBaseUrl(), storageBucket()),
+    alt_text: asNullableString(row.alt_text),
+    caption: asNullableString(row.caption),
+    sort_order: asId(row.sort_order),
+    is_cover: asBoolean(row.is_cover),
   }
 }

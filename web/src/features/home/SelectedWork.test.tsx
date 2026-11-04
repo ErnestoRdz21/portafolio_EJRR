@@ -1,13 +1,21 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ApiError } from '../../services/api.ts'
 import { SelectedWork } from './SelectedWork.tsx'
 
+const getFeaturedProjects = vi.hoisted(() => vi.fn())
+
+vi.mock('../../services/projects.ts', () => ({
+  getFeaturedProjects,
+}))
+
 describe('SelectedWork', () => {
+  beforeEach(() => {
+    getFeaturedProjects.mockReset()
+  })
+
   it('keeps showing a loading state while the request is pending', () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() => new Promise(() => undefined)),
-    )
+    getFeaturedProjects.mockReturnValue(new Promise(() => undefined))
 
     render(<SelectedWork />)
 
@@ -16,9 +24,8 @@ describe('SelectedWork', () => {
   })
 
   it('shows a controlled error when the backend is unreachable', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() => Promise.reject(new TypeError('offline'))),
+    getFeaturedProjects.mockRejectedValue(
+      new ApiError('No se pudo conectar con el backend.'),
     )
 
     render(<SelectedWork />)
@@ -30,14 +37,7 @@ describe('SelectedWork', () => {
   })
 
   it('shows an empty state when there are no featured projects', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () => ({
-        ok: true,
-        status: 200,
-        json: async () => ({ data: [] }),
-      })),
-    )
+    getFeaturedProjects.mockResolvedValue([])
 
     render(<SelectedWork />)
 
