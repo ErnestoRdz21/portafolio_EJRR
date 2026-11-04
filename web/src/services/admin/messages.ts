@@ -1,60 +1,90 @@
-import { ApiError } from '../api.ts'
 import {
-  isRecord,
-  readData,
-  readDataRecord,
-  readNullableString,
-  readNumber,
-  readString,
-} from '../parse.ts'
-import { adminRequest } from './http.ts'
+  asId,
+  asNullableString,
+  asRecord,
+  asRecords,
+  asString,
+  asTimestamp,
+  raise,
+} from '../../lib/rows.ts'
+import { getSupabase } from '../../lib/supabase.ts'
+import { ApiError } from '../api.ts'
+import { FieldErrors } from './http.ts'
 import type {
   AdminMessageDetail,
   AdminMessageSummary,
   MessageStatus,
 } from './types.ts'
 
-export function getAdminMessages(): Promise<AdminMessageSummary[]> {
-  return adminRequest('/api/admin/messages').then((body) =>
-    readData(body).map(readSummary),
-  )
+const SUMMARY = 'id,name,email,subject,status,created_at'
+const DETAIL = 'id,name,email,subject,message,status,created_at'
+
+export async function getAdminMessages(): Promise<AdminMessageSummary[]> {
+  const { data, error } = await getSupabase()
+    .from('contact_messages')
+    .select(SUMMARY)
+    .order('id', { ascending: false })
+
+  raise(error)
+
+  return asRecords(data).map(readSummary)
 }
 
-export function getAdminMessage(id: number): Promise<AdminMessageDetail> {
-  return adminRequest(`/api/admin/messages/${id}`).then((body) =>
-    readDetail(readDataRecord(body)),
-  )
+export async function getAdminMessage(id: number): Promise<AdminMessageDetail> {
+  const { data, error } = await getSupabase()
+    .from('contact_messages')
+    .select(DETAIL)
+    .eq('id', id)
+    .maybeSingle()
+
+  raise(error)
+
+  if (!data) {
+    throw new ApiError('No se encontró el recurso.', 404)
+  }
+
+  return readDetail(asRecord(data))
 }
 
-export function updateAdminMessageStatus(
+export async function updateAdminMessageStatus(
   id: number,
   status: MessageStatus,
 ): Promise<AdminMessageDetail> {
-  return adminRequest(`/api/admin/messages/${id}`, {
-    method: 'PATCH',
-    body: { status },
-  }).then((body) => readDetail(readDataRecord(body)))
-}
-
-function readSummary(value: unknown): AdminMessageSummary {
-  if (!isRecord(value)) {
-    throw new ApiError('La respuesta del backend no tiene el formato esperado.')
+  if (status !== 'new' && status !== 'read' && status !== 'archived') {
+    throw new FieldErrors({ status: 'El estado no es válido.' })
   }
 
+  const { data, error } = await getSupabase()
+    .from('contact_messages')
+    .update({ status })
+    .eq('id', id)
+    .select(DETAIL)
+    .maybeSingle()
+
+  raise(error)
+
+  if (!data) {
+    throw new ApiError('No se encontró el recurso.', 404)
+  }
+
+  return readDetail(asRecord(data))
+}
+
+function readSummary(row: Record<string, unknown>): AdminMessageSummary {
   return {
-    id: readNumber(value.id),
-    name: readString(value.name),
-    email: readString(value.email),
-    subject: readNullableString(value.subject),
-    status: readStatus(value.status),
-    created_at: readNullableString(value.created_at),
+    id: asId(row.id),
+    name: asString(row.name),
+    email: asString(row.email),
+    subject: asNullableString(row.subject),
+    status: readStatus(row.status),
+    created_at: asTimestamp(row.created_at),
   }
 }
 
 function readDetail(row: Record<string, unknown>): AdminMessageDetail {
   return {
     ...readSummary(row),
-    message: readString(row.message),
+    message: asString(row.message),
   }
 }
 

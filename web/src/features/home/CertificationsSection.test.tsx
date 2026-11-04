@@ -1,12 +1,22 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ApiError } from '../../services/api.ts'
 import { CertificationsSection } from './CertificationsSection.tsx'
 
+const getCertifications = vi.hoisted(() => vi.fn())
+
+vi.mock('../../services/certifications.ts', () => ({
+  getCertifications,
+}))
+
 describe('CertificationsSection', () => {
+  beforeEach(() => {
+    getCertifications.mockReset()
+  })
+
   it('shows a controlled error when the backend is unreachable', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() => Promise.reject(new TypeError('offline'))),
+    getCertifications.mockRejectedValue(
+      new ApiError('No se pudo conectar con el backend.'),
     )
 
     render(<CertificationsSection />)

@@ -1,15 +1,17 @@
-import { ApiError } from '../api.ts'
 import {
-  isRecord,
-  readBoolean,
-  readData,
-  readDataRecord,
-  readNullableString,
-  readNumber,
-  readString,
-} from '../parse.ts'
-import { adminRequest } from './http.ts'
+  asBoolean,
+  asDateOnly,
+  asId,
+  asNullableString,
+  asRecord,
+  asRecords,
+  asString,
+  raise,
+} from '../../lib/rows.ts'
+import { getSupabase } from '../../lib/supabase.ts'
+import { ApiError } from '../api.ts'
 import type { AdminCertification } from './types.ts'
+import { validateCertification } from './validate.ts'
 
 export type CertificationInput = {
   name: string
@@ -21,50 +23,75 @@ export type CertificationInput = {
   is_published: boolean
 }
 
-export function getAdminCertifications(): Promise<AdminCertification[]> {
-  return adminRequest('/api/admin/certifications').then((body) =>
-    readData(body).map(readCertification),
-  )
+const COLUMNS =
+  'id,name,issuer,issued_at,credential_url,image_path,sort_order,is_published'
+
+export async function getAdminCertifications(): Promise<AdminCertification[]> {
+  const { data, error } = await getSupabase()
+    .from('certifications')
+    .select(COLUMNS)
+    .order('sort_order', { ascending: true })
+    .order('id', { ascending: true })
+
+  raise(error)
+
+  return asRecords(data).map(readCertification)
 }
 
-export function createAdminCertification(
+export async function createAdminCertification(
   input: CertificationInput,
 ): Promise<AdminCertification> {
-  return adminRequest('/api/admin/certifications', {
-    method: 'POST',
-    body: input,
-  }).then((body) => readCertification(readDataRecord(body)))
+  validateCertification(input)
+  const now = new Date().toISOString()
+  const { data, error } = await getSupabase()
+    .from('certifications')
+    .insert({ ...input, created_at: now, updated_at: now })
+    .select(COLUMNS)
+    .single()
+
+  raise(error)
+
+  return readCertification(asRecord(data))
 }
 
-export function updateAdminCertification(
+export async function updateAdminCertification(
   id: number,
   input: CertificationInput,
 ): Promise<AdminCertification> {
-  return adminRequest(`/api/admin/certifications/${id}`, {
-    method: 'PUT',
-    body: input,
-  }).then((body) => readCertification(readDataRecord(body)))
-}
+  validateCertification(input)
+  const { data, error } = await getSupabase()
+    .from('certifications')
+    .update({ ...input, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select(COLUMNS)
+    .maybeSingle()
 
-export function deleteAdminCertification(id: number): Promise<void> {
-  return adminRequest(`/api/admin/certifications/${id}`, {
-    method: 'DELETE',
-  }).then(() => undefined)
-}
+  raise(error)
 
-function readCertification(value: unknown): AdminCertification {
-  if (!isRecord(value)) {
-    throw new ApiError('La respuesta del backend no tiene el formato esperado.')
+  if (!data) {
+    throw new ApiError('No se encontró el recurso.', 404)
   }
 
+  return readCertification(asRecord(data))
+}
+
+export async function deleteAdminCertification(id: number): Promise<void> {
+  const { error } = await getSupabase()
+    .from('certifications')
+    .delete()
+    .eq('id', id)
+  raise(error)
+}
+
+function readCertification(row: Record<string, unknown>): AdminCertification {
   return {
-    id: readNumber(value.id),
-    name: readString(value.name),
-    issuer: readNullableString(value.issuer),
-    issued_at: readNullableString(value.issued_at),
-    credential_url: readNullableString(value.credential_url),
-    image_path: readNullableString(value.image_path),
-    sort_order: readNumber(value.sort_order),
-    is_published: readBoolean(value.is_published),
+    id: asId(row.id),
+    name: asString(row.name),
+    issuer: asNullableString(row.issuer),
+    issued_at: asDateOnly(row.issued_at),
+    credential_url: asNullableString(row.credential_url),
+    image_path: asNullableString(row.image_path),
+    sort_order: asId(row.sort_order),
+    is_published: asBoolean(row.is_published),
   }
 }
