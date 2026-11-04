@@ -90,31 +90,17 @@ export async function getProject(
 function readProjectListItem(value: unknown): ProjectListItem {
   const row = asRecord(value)
   const images = readImages(row.project_images)
-  const cover = pickCover(images)
 
   return {
-    id: asId(row.id),
-    slug: asString(row.slug),
-    title: asString(row.title),
-    subtitle: asNullableString(row.subtitle),
-    summary: asString(row.summary),
-    role: asNullableString(row.role),
-    period: asNullableString(row.period),
+    ...readProjectCore(row),
     is_featured: asBoolean(row.is_featured),
-    cover_image: cover,
-    technologies: sortTechnologies(asRecords(row.technologies)),
+    cover_image: pickCover(images),
   }
 }
 
 function readProjectDetail(row: Record<string, unknown>): ProjectDetail {
-  const base = readProjectListItem(row)
-
   return {
-    id: base.id,
-    slug: base.slug,
-    title: base.title,
-    subtitle: base.subtitle,
-    summary: base.summary,
+    ...readProjectCore(row),
     context: asNullableString(row.context),
     problem: asNullableString(row.problem),
     solution: asNullableString(row.solution),
@@ -123,10 +109,20 @@ function readProjectDetail(row: Record<string, unknown>): ProjectDetail {
     challenges: asNullableString(row.challenges),
     results: asNullableString(row.results),
     learnings: asNullableString(row.learnings),
-    role: base.role,
-    period: base.period,
-    technologies: base.technologies,
     images: readImages(row.project_images),
+  }
+}
+
+function readProjectCore(row: Record<string, unknown>) {
+  return {
+    id: asId(row.id),
+    slug: asString(row.slug),
+    title: asString(row.title),
+    subtitle: asNullableString(row.subtitle),
+    summary: asString(row.summary),
+    role: asNullableString(row.role),
+    period: asNullableString(row.period),
+    technologies: sortTechnologies(asRecords(row.technologies)),
   }
 }
 
