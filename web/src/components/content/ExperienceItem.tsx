@@ -16,10 +16,10 @@ export function ExperienceItem({
   bullets = [],
 }: ExperienceItemProps) {
   return (
-    <article className="relative border-l border-border py-5 pl-6">
+    <article className="group relative border-l border-border py-5 pl-6 transition duration-200 motion-reduce:transition-none">
       <span
         aria-hidden="true"
-        className="absolute top-7 -left-[5px] size-2.5 rounded-full border-2 border-accent bg-surface"
+        className="absolute top-7 -left-[7px] size-3.5 rounded-full border-2 border-accent bg-surface shadow-[0_0_0_4px_var(--color-accent-soft)] transition duration-200 group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
       />
       {period ? (
         <p className="font-mono text-caption text-text-muted">{period}</p>

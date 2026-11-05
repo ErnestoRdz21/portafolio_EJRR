@@ -10,7 +10,11 @@ export function CertificationsSection() {
 
   return (
     <Section>
-      <SectionHeader eyebrow="Formación" title="Certificaciones" />
+      <SectionHeader
+        eyebrow="Cursos"
+        title="Certificaciones"
+        description="Formación continua con foco en calidad, frontend y Laravel."
+      />
       <div className="mt-8">
         {certifications.length === 0 ? (
           <EmptyState
@@ -18,13 +22,19 @@ export function CertificationsSection() {
             description="Cuando agregue certificaciones al perfil aparecerán aquí."
           />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {certifications.map((item) => (
+          <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2">
+            {certifications.map((item, index) => (
               <CertificationCard
-                key={`${item.title}-${item.issuedAt}`}
+                key={item.id}
+                id={item.id}
                 name={item.title}
                 issuer={item.issuer}
-                issuedAt={`${item.issuedAt} · ${item.hours}`}
+                issuedAt={item.issuedAt}
+                hours={item.hours}
+                imageSrc={item.imageSrc}
+                imageAlt={`Portada del curso ${item.title}`}
+                className="animate-cert-in"
+                style={{ animationDelay: `${index * 70}ms` }}
               />
             ))}
           </div>
@@ -39,17 +49,19 @@ export function CertificationsSkeleton() {
     <div
       role="status"
       aria-label="Cargando certificaciones"
-      className="grid gap-4 md:grid-cols-2"
+      className="grid grid-cols-1 gap-4 md:grid-cols-2"
     >
       {Array.from({ length: 4 }, (_, index) => (
         <div
           key={index}
-          className="rounded-xl border border-border bg-surface p-5 shadow-sm"
+          className="overflow-hidden rounded-xl border border-border bg-surface shadow-sm"
         >
-          <Skeleton className="size-10 rounded-lg" />
-          <Skeleton className="mt-4 h-5 w-3/4" />
-          <Skeleton className="mt-3 h-3 w-1/3" />
-          <Skeleton className="mt-2 h-3 w-1/2" />
+          <Skeleton className="aspect-[16/10] w-full rounded-none" />
+          <div className="space-y-3 p-5">
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-3 w-1/3" />
+            <Skeleton className="h-3 w-1/2" />
+          </div>
         </div>
       ))}
     </div>

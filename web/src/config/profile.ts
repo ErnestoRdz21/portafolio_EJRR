@@ -17,10 +17,12 @@ export type EducationItem = {
 }
 
 export type ProfileCertification = {
+  id: string
   title: string
   issuer: string
   issuedAt: string
   hours: string
+  imageSrc?: string
 }
 
 const githubUrl =
@@ -86,28 +88,32 @@ export const profile = {
   ] satisfies EducationItem[],
   certifications: [
     {
+      id: 'ai-powered-qa',
       title: 'AI-powered QA',
       issuer: 'Udemy',
       issuedAt: 'Octubre 2026',
       hours: '9 h',
     },
     {
+      id: 'react-beginners',
       title: 'React para principiantes',
       issuer: 'Udemy',
       issuedAt: 'Septiembre 2026',
       hours: '2.5 h',
     },
     {
+      id: 'laravel-apis',
       title: 'Usa Laravel para consumir APIs y servicios HTTP',
       issuer: 'Udemy',
       issuedAt: 'Agosto 2026',
       hours: '6 h',
     },
     {
+      id: 'laravel-advanced',
       title: 'Laravel de alto nivel',
       issuer: 'Udemy',
       issuedAt: 'Marzo 2026',
       hours: '17 h',
     },
-  ] satisfies ProfileCertification[],
+  ] as ProfileCertification[],
 }
