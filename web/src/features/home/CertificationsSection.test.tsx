@@ -18,7 +18,9 @@ describe('CertificationsSection', () => {
       screen.getByText('Usa Laravel para consumir APIs y servicios HTTP'),
     ).toBeVisible()
     expect(screen.getByText('Laravel de alto nivel')).toBeVisible()
-    expect(screen.getByText('Octubre 2026 · 9 h')).toBeVisible()
+    expect(screen.getByText('Octubre 2026')).toBeVisible()
+    expect(screen.getByText('9 h')).toBeVisible()
+    expect(screen.getAllByText('Udemy')).toHaveLength(4)
     expect(
       screen.queryByText('No hay certificaciones publicadas'),
     ).not.toBeInTheDocument()

@@ -1,4 +1,4 @@
-import { GraduationCap } from 'lucide-react'
+import { EducationItem } from '../../components/content/EducationItem.tsx'
 import { ExperienceItem } from '../../components/content/ExperienceItem.tsx'
 import { Section } from '../../components/ui/Section.tsx'
 import { SectionHeader } from '../../components/ui/SectionHeader.tsx'
@@ -20,29 +20,18 @@ export function ExperienceSection() {
         ))}
       </div>
 
-      <div className="mt-10 max-w-3xl">
-        <h3 className="text-h3 tracking-tight text-text-primary">Educación</h3>
-        <ul className="mt-4 space-y-4">
+      <div className="mt-12 max-w-3xl">
+        <SectionHeader eyebrow="Formación académica" title="Educación" />
+        <div className="mt-6">
           {profile.education.map((item) => (
-            <li
+            <EducationItem
               key={`${item.program}-${item.period}`}
-              className="flex items-start gap-3"
-            >
-              <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-lg bg-accent-soft text-accent">
-                <GraduationCap className="size-4" aria-hidden="true" />
-              </span>
-              <div>
-                <p className="text-small text-text-primary">{item.program}</p>
-                <p className="mt-1 text-small text-text-secondary">
-                  {item.school}
-                </p>
-                <p className="mt-1 font-mono text-caption text-text-muted">
-                  {item.period}
-                </p>
-              </div>
-            </li>
+              period={item.period}
+              program={item.program}
+              school={item.school}
+            />
           ))}
-        </ul>
+        </div>
       </div>
     </Section>
   )
