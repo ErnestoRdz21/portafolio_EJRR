@@ -12,7 +12,15 @@ describe('ContactForm', () => {
 
     expect(screen.getByText('El nombre es obligatorio.')).toBeInTheDocument()
     expect(screen.getByText('El correo es obligatorio.')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Escribe un WhatsApp válido, con lada si estás fuera de México.',
+      ),
+    ).toBeInTheDocument()
     expect(screen.getByText('El mensaje es obligatorio.')).toBeInTheDocument()
+    expect(
+      screen.getByText(/Solo para responderte por WhatsApp/),
+    ).toBeInTheDocument()
     expect(
       screen.queryByText(
         'Mensaje enviado correctamente. Gracias por contactarme.',

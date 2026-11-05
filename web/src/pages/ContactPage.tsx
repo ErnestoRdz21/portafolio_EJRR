@@ -27,14 +27,14 @@ export function ContactPage() {
     <Section>
       <SectionHeader
         heading="h1"
-        eyebrow="Contact"
-        title="Contacto"
-        description="¿Quieres hablar sobre una oportunidad o proyecto?"
+        eyebrow="Contacto"
+        title="Escríbeme"
+        description="Cuéntame del proyecto. Si dejas tu WhatsApp, te respondo por ahí."
       />
       <span className="mt-8 grid size-10 place-items-center rounded-lg bg-accent-soft text-accent">
         <Mail className="size-4" aria-hidden="true" />
       </span>
-      {contactFormEnabled ? (
+      {contactFormEnabled() ? (
         <ContactForm />
       ) : (
         <div className="mt-4 max-w-xl space-y-4">

@@ -5,5 +5,6 @@ export const navItems = [
   { to: '/contact', label: 'Contact', end: false },
 ] as const
 
-export const contactFormEnabled =
-  import.meta.env.VITE_CONTACT_FORM_ENABLED === 'true'
+export function contactFormEnabled(): boolean {
+  return import.meta.env.VITE_CONTACT_FORM_ENABLED === 'true'
+}
