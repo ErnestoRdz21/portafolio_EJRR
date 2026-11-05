@@ -9,6 +9,7 @@ import { FieldErrors } from '../../services/admin/http.ts'
 type FormState = {
   name: string
   email: string
+  phone: string
   subject: string
   message: string
   website: string
@@ -17,6 +18,7 @@ type FormState = {
 const emptyForm: FormState = {
   name: '',
   email: '',
+  phone: '',
   subject: '',
   message: '',
   website: '',
@@ -70,7 +72,7 @@ export function ContactForm() {
 
   return (
     <form
-      className="mt-4 max-w-xl space-y-4"
+      className="mt-4 max-w-xl space-y-4 rounded-xl border border-border bg-surface p-4 shadow-sm sm:p-6"
       noValidate
       onSubmit={(event) => void onSubmit(event)}
     >
@@ -106,6 +108,36 @@ export function ContactForm() {
           aria-describedby={errors.email ? 'contact-email-error' : undefined}
           onChange={(event) => update('email', event.target.value)}
         />
+      </Field>
+      <Field
+        label="WhatsApp"
+        htmlFor="contact-phone"
+        error={errors.phone}
+        errorId="contact-phone-error"
+      >
+        <input
+          id="contact-phone"
+          className={adminField}
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          placeholder="81 1234 5678"
+          value={form.phone}
+          aria-invalid={errors.phone ? true : undefined}
+          aria-describedby={
+            errors.phone
+              ? 'contact-phone-error contact-phone-hint'
+              : 'contact-phone-hint'
+          }
+          onChange={(event) => update('phone', event.target.value)}
+        />
+        <p
+          id="contact-phone-hint"
+          className="mt-1.5 text-caption text-text-muted"
+        >
+          Solo para responderte por WhatsApp. No lo comparto, no lo uso para
+          promociones y no se lo paso a nadie.
+        </p>
       </Field>
       <Field
         label="Asunto"
@@ -165,7 +197,7 @@ export function ContactForm() {
           {formError}
         </p>
       ) : null}
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending} className="w-full sm:w-auto">
         {pending ? 'Enviando…' : 'Enviar mensaje'}
       </Button>
     </form>
@@ -183,6 +215,13 @@ function validate(form: FormState): Record<string, string> {
     errors.email = 'El correo es obligatorio.'
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
     errors.email = 'El correo no es válido.'
+  }
+
+  const digits = form.phone.replace(/\D/g, '')
+
+  if (digits.length < 10 || digits.length > 15) {
+    errors.phone =
+      'Escribe un WhatsApp válido, con lada si estás fuera de México.'
   }
 
   if (form.message.trim() === '') {

@@ -8,4 +8,5 @@ interface ImportMetaEnv {
   readonly VITE_CV_URL?: string
   readonly VITE_SITE_URL?: string
   readonly VITE_CONTACT_FORM_ENABLED?: string
+  readonly VITE_WEB3FORMS_ACCESS_KEY?: string
 }

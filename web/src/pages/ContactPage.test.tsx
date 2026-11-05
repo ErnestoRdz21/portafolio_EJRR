@@ -1,10 +1,15 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ContactPage } from './ContactPage.tsx'
 
 describe('ContactPage', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
   it('shows the unavailable notice instead of the form', () => {
+    vi.stubEnv('VITE_CONTACT_FORM_ENABLED', '')
     render(
       <MemoryRouter>
         <ContactPage />
