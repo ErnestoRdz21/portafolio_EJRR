@@ -26,7 +26,7 @@ export function EngineeringSection() {
   return (
     <Section id="engineering" className="scroll-mt-20">
       <SectionHeader
-        eyebrow="Engineering"
+        eyebrow="Ingeniería"
         title="Cómo trabajo"
         description="Áreas de práctica. Sin barras ni porcentajes."
       />

@@ -5,6 +5,7 @@ type ExperienceItemProps = {
   title: string
   company: string
   summary?: string | null
+  bullets?: string[]
 }
 
 export function ExperienceItem({
@@ -12,6 +13,7 @@ export function ExperienceItem({
   title,
   company,
   summary,
+  bullets = [],
 }: ExperienceItemProps) {
   return (
     <article className="relative border-l border-border py-5 pl-6">
@@ -34,6 +36,15 @@ export function ExperienceItem({
         <p className="mt-2 text-small break-words text-text-secondary">
           {summary}
         </p>
+      ) : null}
+      {bullets.length > 0 ? (
+        <ul className="mt-3 list-disc space-y-2 pl-5 text-small text-text-secondary">
+          {bullets.map((bullet) => (
+            <li key={bullet} className="break-words">
+              {bullet}
+            </li>
+          ))}
+        </ul>
       ) : null}
     </article>
   )

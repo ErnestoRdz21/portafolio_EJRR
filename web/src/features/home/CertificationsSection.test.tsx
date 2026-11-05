@@ -1,31 +1,34 @@
 import { render, screen } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ApiError } from '../../services/api.ts'
-import { CertificationsSection } from './CertificationsSection.tsx'
-
-const getCertifications = vi.hoisted(() => vi.fn())
-
-vi.mock('../../services/certifications.ts', () => ({
-  getCertifications,
-}))
+import { describe, expect, it } from 'vitest'
+import {
+  CertificationsSection,
+  CertificationsSkeleton,
+} from './CertificationsSection.tsx'
 
 describe('CertificationsSection', () => {
-  beforeEach(() => {
-    getCertifications.mockReset()
-  })
-
-  it('shows a controlled error when the backend is unreachable', async () => {
-    getCertifications.mockRejectedValue(
-      new ApiError('No se pudo conectar con el backend.'),
-    )
-
+  it('renders the certifications from the profile', () => {
     render(<CertificationsSection />)
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'No se pudo conectar con el backend.',
-    )
     expect(
       screen.getByRole('heading', { name: 'Certificaciones' }),
     ).toBeVisible()
+    expect(screen.getByText('AI-powered QA')).toBeVisible()
+    expect(screen.getByText('React para principiantes')).toBeVisible()
+    expect(
+      screen.getByText('Usa Laravel para consumir APIs y servicios HTTP'),
+    ).toBeVisible()
+    expect(screen.getByText('Laravel de alto nivel')).toBeVisible()
+    expect(screen.getByText('Octubre 2026 · 9 h')).toBeVisible()
+    expect(
+      screen.queryByText('No hay certificaciones publicadas'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('exposes a skeleton loading state', () => {
+    render(<CertificationsSkeleton />)
+
+    expect(
+      screen.getByRole('status', { name: 'Cargando certificaciones' }),
+    ).toBeInTheDocument()
   })
 })

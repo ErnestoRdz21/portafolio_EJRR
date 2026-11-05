@@ -13,6 +13,7 @@ export function HomePage() {
     description:
       'Full Stack Developer especializado en Laravel, React y TypeScript, con experiencia en SaaS, APIs REST, integraciones y productos web.',
     path: '/',
+    image: '/og.png',
   })
 
   return (

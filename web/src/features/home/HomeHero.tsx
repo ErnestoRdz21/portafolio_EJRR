@@ -7,7 +7,7 @@ export function HomeHero() {
     <section className="grid items-center gap-10 md:grid-cols-[minmax(0,1.15fr)_minmax(16rem,0.85fr)] md:gap-12 lg:gap-16">
       <div>
         <p className="font-mono text-mono-label tracking-wide text-text-muted uppercase">
-          Portfolio
+          Portafolio
         </p>
         <h1 className="mt-3 max-w-xl text-h1 tracking-tight text-text-primary">
           {profile.name}

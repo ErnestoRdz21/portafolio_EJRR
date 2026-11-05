@@ -19,9 +19,9 @@ export function SelectedWork() {
   return (
     <Section>
       <SectionHeader
-        eyebrow="Work"
-        title="Selected Work"
-        description="Casos destacados."
+        eyebrow="Trabajo"
+        title="Proyectos destacados"
+        description="Casos seleccionados del portafolio."
       />
       <div className="mt-8">
         {state.status === 'loading' ? (

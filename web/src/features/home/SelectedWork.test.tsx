@@ -20,7 +20,9 @@ describe('SelectedWork', () => {
     render(<SelectedWork />)
 
     expect(screen.getByRole('status')).toHaveTextContent('Cargando proyectos')
-    expect(screen.getByRole('heading', { name: 'Selected Work' })).toBeVisible()
+    expect(
+      screen.getByRole('heading', { name: 'Proyectos destacados' }),
+    ).toBeVisible()
   })
 
   it('shows a controlled error when the backend is unreachable', async () => {
@@ -33,7 +35,9 @@ describe('SelectedWork', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'No se pudo conectar con el backend.',
     )
-    expect(screen.getByRole('heading', { name: 'Selected Work' })).toBeVisible()
+    expect(
+      screen.getByRole('heading', { name: 'Proyectos destacados' }),
+    ).toBeVisible()
   })
 
   it('shows an empty state when there are no featured projects', async () => {
