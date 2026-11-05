@@ -33,7 +33,7 @@ export function ProjectCard({
     <article className="min-w-0 rounded-xl border border-border bg-surface p-3 shadow-sm transition duration-150 hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
       <Link
         to={href}
-        aria-label={title}
+        aria-label={`Ver proyecto ${title}`}
         className="focus-ring block rounded-lg"
       >
         <div className="aspect-[16/10] overflow-hidden rounded-lg border border-border bg-surface-secondary">

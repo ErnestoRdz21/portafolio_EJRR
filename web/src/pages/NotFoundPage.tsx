@@ -1,7 +1,8 @@
 import { LinkButton } from '../components/ui/LinkButton.tsx'
-import { usePageMeta } from '../seo/usePageMeta.ts'
+import { useNoIndex, usePageMeta } from '../seo/usePageMeta.ts'
 
 export function NotFoundPage() {
+  useNoIndex()
   usePageMeta({
     title: 'Página no encontrada — Ernesto Rodríguez',
     description: 'Esta dirección no corresponde a una página del portafolio.',

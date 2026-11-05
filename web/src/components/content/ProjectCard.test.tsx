@@ -22,7 +22,9 @@ describe('ProjectCard', () => {
     renderCard()
 
     expect(
-      screen.getByRole('link', { name: 'SaaS Logistics Platform' }),
+      screen.getByRole('link', {
+        name: 'Ver proyecto SaaS Logistics Platform',
+      }),
     ).toHaveAttribute('href', '/work/saas-logistics-platform')
     expect(screen.getByText('Un panel de envíos.')).toBeInTheDocument()
     expect(screen.getByText('Laravel')).toBeInTheDocument()
