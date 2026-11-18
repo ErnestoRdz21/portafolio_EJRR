@@ -96,8 +96,8 @@ class PortfolioSchemaTest extends TestCase
         $this->seed();
 
         $this->assertDatabaseCount('technologies', 15);
-        $this->assertDatabaseCount('projects', 6);
-        $this->assertDatabaseCount('project_images', 20);
+        $this->assertDatabaseCount('projects', 9);
+        $this->assertDatabaseCount('project_images', 32);
         $this->assertDatabaseCount('certifications', 2);
         $this->assertNull(
             Certification::query()->where('name', 'React para principiantes')->value('issuer'),
@@ -114,7 +114,7 @@ class PortfolioSchemaTest extends TestCase
         $this->assertTrue($logistics->technologies->contains('slug', 'laravel'));
         $this->assertTrue($logistics->images->first()?->is_cover);
 
-        $this->assertSame(3, Project::query()->featured()->count());
+        $this->assertSame(6, Project::query()->featured()->count());
 
         $conversation = DemoConversation::query()->withCount('messages')->first();
 
@@ -135,8 +135,8 @@ class PortfolioSchemaTest extends TestCase
         $this->seed();
 
         $this->assertDatabaseCount('technologies', 15);
-        $this->assertDatabaseCount('projects', 6);
-        $this->assertDatabaseCount('project_images', 13);
+        $this->assertDatabaseCount('projects', 9);
+        $this->assertDatabaseCount('project_images', 25);
         $this->assertDatabaseCount('certifications', 2);
         $this->assertDatabaseCount('demo_shipments', 15);
         $this->assertDatabaseCount('demo_notifications', 10);

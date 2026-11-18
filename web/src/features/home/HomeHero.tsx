@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { ProductPanels } from '../../assets/illustrations/ProductPanels.tsx'
+import { SocialLinks } from '../../components/content/SocialLinks.tsx'
 import { ErrorState } from '../../components/feedback/ErrorState.tsx'
 import { Skeleton } from '../../components/feedback/Skeleton.tsx'
 import { LinkButton } from '../../components/ui/LinkButton.tsx'
@@ -64,28 +65,7 @@ export function HomeHero() {
             </a>
           ) : null}
         </div>
-        <div className="mt-6 flex flex-wrap gap-4">
-          {profile.github ? (
-            <a
-              href={profile.github}
-              className="focus-ring text-small text-text-secondary hover:text-text-primary"
-              target="_blank"
-              rel="noreferrer"
-            >
-              GitHub
-            </a>
-          ) : null}
-          {profile.linkedin ? (
-            <a
-              href={profile.linkedin}
-              className="focus-ring text-small text-text-secondary hover:text-text-primary"
-              target="_blank"
-              rel="noreferrer"
-            >
-              LinkedIn
-            </a>
-          ) : null}
-        </div>
+        <SocialLinks className="mt-6" />
       </div>
       <ProductPanels />
     </section>

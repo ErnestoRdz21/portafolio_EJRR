@@ -1,4 +1,5 @@
 import { Monogram } from '../../assets/branding/Monogram.tsx'
+import { SocialLinks } from '../content/SocialLinks.tsx'
 import { profile } from '../../config/profile.ts'
 import { Container } from '../ui/Container.tsx'
 
@@ -17,45 +18,11 @@ export function Footer() {
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-4">
-          <FooterLink href={profile.github}>GitHub</FooterLink>
-          <FooterLink href={profile.linkedin}>LinkedIn</FooterLink>
-          {profile.email ? (
-            <a
-              href={`mailto:${profile.email}`}
-              className="focus-ring text-small text-text-secondary hover:text-text-primary"
-            >
-              Email
-            </a>
-          ) : null}
-        </div>
+        <SocialLinks size="sm" showEmail />
         <p className="font-mono text-caption text-text-muted">
           © {year} {profile.name}
         </p>
       </Container>
     </footer>
-  )
-}
-
-function FooterLink({
-  href,
-  children,
-}: {
-  href: string | null
-  children: string
-}) {
-  if (!href) {
-    return null
-  }
-
-  return (
-    <a
-      href={href}
-      className="focus-ring text-small text-text-secondary hover:text-text-primary"
-      target="_blank"
-      rel="noreferrer"
-    >
-      {children}
-    </a>
   )
 }

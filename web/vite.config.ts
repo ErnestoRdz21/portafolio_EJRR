@@ -13,6 +13,12 @@ const publicPaths = [
   '/work/white-label-tracking',
   '/work/customer-support-desk',
   '/work/settings-spa-modernization',
+  '/work/guided-product-tours',
+  '/work/email-template-gallery',
+  '/work/notification-billing-plans',
+  '/demo/tours',
+  '/demo/emails',
+  '/demo/plans',
 ]
 
 function sitemapPlugin(siteUrl: string | undefined): Plugin {

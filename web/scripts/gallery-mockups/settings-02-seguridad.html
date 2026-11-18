@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="./settings.css" />
+  </head>
+  <body>
+    <div class="frame">
+      <aside class="side">
+        <h1>Ajustes</h1>
+        <p class="sub">Administra la configuración de tu cuenta.</p>
+        <div class="search">Buscar ajuste…</div>
+        <nav class="nav">
+          <div class="group">
+            <div class="label">CONFIGURACIÓN BASE</div>
+            <a href="#">Perfil</a>
+            <a class="active" href="#">Seguridad</a>
+            <a href="#">Notificaciones</a>
+            <a href="#">Mis Servicios de Envío</a>
+          </div>
+          <div class="group">
+            <div class="label">CUENTA Y ACCESO</div>
+            <a href="#">Desarrollador</a>
+            <a href="#">Administración</a>
+            <a href="#">Mi equipo</a>
+          </div>
+          <div class="group">
+            <div class="label">HERRAMIENTAS</div>
+            <a href="#">Direcciones</a>
+            <a href="#">Paquetes</a>
+          </div>
+        </nav>
+      </aside>
+      <main class="main">
+        <h2>Seguridad</h2>
+        <p class="desc">
+          Administra la seguridad de tu cuenta y mantén tus datos protegidos.
+        </p>
+
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <h3>Autenticación con Google</h3>
+              <p>Vincula tu cuenta de Google para un acceso más seguro.</p>
+            </div>
+          </div>
+          <div class="warn">
+            Tu cuenta demo está protegida con contraseña local. Vincula Google
+            para mayor seguridad y comodidad.
+          </div>
+          <button class="btn solid">Vincular con Google</button>
+          <div style="margin-top: 10px; font-size: 13px; color: var(--muted)">
+            Elegir cuenta · Usar otra cuenta
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <h3>Cambiar Contraseña</h3>
+              <p>
+                Actualiza tu contraseña regularmente para mantener tu cuenta
+                segura.
+              </p>
+            </div>
+          </div>
+          <div class="ok">
+            Contraseña local configurada. Puedes acceder con tu email y
+            contraseña.
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label>Contraseña Actual</label>
+              <div class="input">••••••••</div>
+            </div>
+            <div class="field">
+              <label>Nueva Contraseña</label>
+              <div class="input">Mínimo 8 caracteres</div>
+            </div>
+            <div class="field" style="grid-column: 1 / -1">
+              <label>Confirmar Nueva Contraseña</label>
+              <div class="input">••••••••</div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

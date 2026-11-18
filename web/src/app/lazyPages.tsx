@@ -30,6 +30,21 @@ export const LegacyDemoPage = lazy(() =>
     default: module.LegacyDemoPage,
   })),
 )
+export const ToursDemoPage = lazy(() =>
+  import('../pages/demos/ToursDemoPage.tsx').then((module) => ({
+    default: module.ToursDemoPage,
+  })),
+)
+export const EmailGalleryDemoPage = lazy(() =>
+  import('../pages/demos/EmailGalleryDemoPage.tsx').then((module) => ({
+    default: module.EmailGalleryDemoPage,
+  })),
+)
+export const PlansDemoPage = lazy(() =>
+  import('../pages/demos/PlansDemoPage.tsx').then((module) => ({
+    default: module.PlansDemoPage,
+  })),
+)
 export const LoginPage = lazy(() =>
   import('../pages/admin/LoginPage.tsx').then((module) => ({
     default: module.LoginPage,

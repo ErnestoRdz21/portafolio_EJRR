@@ -99,6 +99,72 @@ class ProjectSeeder extends Seeder
             ]];
         }
 
+        if ($project->slug === 'guided-product-tours') {
+            return [
+                [
+                    'path' => 'projects/guided-product-tours/cover.webp',
+                    'alt_text' => 'Tour guiado sobre accesos directos recomendados',
+                    'caption' => 'Tour de onboarding: accesos directos a los módulos más usados.',
+                    'sort_order' => 1,
+                    'is_cover' => true,
+                ],
+                [
+                    'path' => 'projects/guided-product-tours/01-accesos-directos.webp',
+                    'alt_text' => 'Paso del tour explicando accesos directos',
+                    'caption' => 'Cada desarrollo nuevo incluye un tour para instruir al cliente en la UI real.',
+                    'sort_order' => 2,
+                    'is_cover' => false,
+                ],
+                [
+                    'path' => 'projects/guided-product-tours/02-busqueda-ajustes.webp',
+                    'alt_text' => 'Paso del tour sobre el buscador de ajustes',
+                    'caption' => 'El recorrido apunta al buscador para llegar directo a cualquier módulo.',
+                    'sort_order' => 3,
+                    'is_cover' => false,
+                ],
+                [
+                    'path' => 'projects/guided-product-tours/03-tour-notificaciones.webp',
+                    'alt_text' => 'Tour en la pantalla de notificaciones',
+                    'caption' => 'Tour de notificaciones: qué avisos recibe el usuario y cuáles van al cliente.',
+                    'sort_order' => 4,
+                    'is_cover' => false,
+                ],
+                [
+                    'path' => 'projects/guided-product-tours/04-audiencias-avisos.webp',
+                    'alt_text' => 'Tour de audiencias para ti y para tus clientes',
+                    'caption' => 'Pasos para separar avisos internos y avisos al destinatario de cada guía.',
+                    'sort_order' => 5,
+                    'is_cover' => false,
+                ],
+            ];
+        }
+
+        if ($project->slug === 'email-template-gallery') {
+            return [
+                [
+                    'path' => 'projects/email-template-gallery/cover.webp',
+                    'alt_text' => 'Plantilla de correo de envío creado, vista escritorio y móvil',
+                    'caption' => 'Plantilla anonimizada: aviso de envío creado con preview responsive.',
+                    'sort_order' => 1,
+                    'is_cover' => true,
+                ],
+                [
+                    'path' => 'projects/email-template-gallery/01-envio-creado-dual.webp',
+                    'alt_text' => 'Correo de creación de envío en escritorio y móvil',
+                    'caption' => 'Misma plantilla en escritorio y móvil, con branding censurado.',
+                    'sort_order' => 2,
+                    'is_cover' => false,
+                ],
+                [
+                    'path' => 'projects/email-template-gallery/02-envio-creado-variante.webp',
+                    'alt_text' => 'Variante demo de plantilla de envío creado',
+                    'caption' => 'Variante Logistics Demo · DEMO-001 · Cliente Demo.',
+                    'sort_order' => 3,
+                    'is_cover' => false,
+                ],
+            ];
+        }
+
         if ($project->slug === 'customer-support-desk') {
             return [
                 [
@@ -197,6 +263,27 @@ class ProjectSeeder extends Seeder
                 'alt_text' => 'Listado en tabla de una funcionalidad de configuración.',
                 'caption' => 'Listado de plantillas en una vista de tabla, dentro del mismo flujo de configuración.',
                 'sort_order' => 5,
+                'is_cover' => false,
+            ],
+            [
+                'path' => 'projects/settings-spa/06-perfil-demo.webp',
+                'alt_text' => 'Pantalla Mi Perfil en Settings SPA (demo)',
+                'caption' => 'Usuario Demo, asesor demo y código DEMO-0001-0001.',
+                'sort_order' => 6,
+                'is_cover' => false,
+            ],
+            [
+                'path' => 'projects/settings-spa/07-seguridad-demo.webp',
+                'alt_text' => 'Pantalla Seguridad en Settings SPA (demo)',
+                'caption' => 'Google Auth y cambio de contraseña en cuenta demo.',
+                'sort_order' => 7,
+                'is_cover' => false,
+            ],
+            [
+                'path' => 'projects/settings-spa/08-direcciones-demo.webp',
+                'alt_text' => 'Pantalla Direcciones en Settings SPA (demo)',
+                'caption' => 'Listado con Ana Demo, Carlos Ejemplo y direcciones de ejemplo.',
+                'sort_order' => 8,
                 'is_cover' => false,
             ],
         ];
@@ -327,6 +414,66 @@ class ProjectSeeder extends Seeder
                 'is_published' => true,
                 'sort_order' => 6,
                 'technologies' => ['react', 'typescript', 'laravel', 'tailwind-css', 'vite'],
+            ],
+            [
+                'slug' => 'guided-product-tours',
+                'title' => 'Guided Product Tours',
+                'subtitle' => 'Onboarding con driver.js',
+                'summary' => 'En cada desarrollo nuevo se arma un tour guiado para que el cliente vea cómo usar la pantalla o pueda instruirse solo: API reutilizable, pasos anclados a la UI y persistencia por usuario.',
+                'context' => "Al crecer la SPA de ajustes y otros módulos, los usuarios nuevos se perdían entre pantallas densas.\n\nLa regla de producto quedó clara: en cada desarrollo nuevo se hacen tours para que el cliente vea cómo se usa la feature o para instruirlo sin depender solo de docs. Hacía falta un sistema reutilizable, no tooltips sueltos por módulo.",
+                'problem' => "Cada módulo inventaba su propia forma de “explicar la pantalla”: tooltips sueltos, docs externos o nada.\n\nSin un sistema común no había forma de marcar un tour como visto, limitar quién lo ve, ni mantener los pasos cuando la UI cambiaba.",
+                'solution' => "Armé un sistema global de tours sobre driver.js: una API para declarar pasos, anclas en la UI, y reglas de cuándo mostrar el recorrido.\n\nLa persistencia queda por usuario; la activación se controla por configuración (whitelist). Soporte puede reactivar un tour sin redeploy. En este portafolio la demo corre solo en el navegador sobre una mini SPA ficticia.",
+                'responsibilities' => "Diseñé la API del tour, la integración en la SPA de ajustes y el contrato de persistencia/activación.\n\nTambién cuidé que los pasos fueran mantenibles: selectores estables y copy corto, para que el onboarding no se rompiera en cada refactor visual.",
+                'technical_decisions' => "driver.js para el spotlight y el popover. React + TypeScript para la pantalla anfitriona. La decisión de producto: el tour vive junto a la UI, no en un micrositio aparte.\n\nWhitelist y “ya visto” viven en configuración/persistencia de usuario en el producto real; la demo del portafolio no guarda estado en servidor.",
+                'challenges' => "Anclar pasos a una UI que sigue migrando, sin que un cambio de layout rompa el tour.\n\nEvitar tours interminables: pocos pasos, un objetivo claro por pantalla, y salida fácil.",
+                'results' => "Quedó un patrón de onboarding reutilizable en varias secciones del producto.\n\nEl case study y la demo en vivo muestran el mismo idea: destacar controles reales y cerrar el recorrido con feedback claro.",
+                'learnings' => "Un tour útil enseña la interfaz que la persona va a usar, no un deck de marketing.\n\nSi el sistema no es global, cada módulo vuelve a inventar tooltips y el onboarding se fragmenta.",
+                'role' => 'Full Stack Developer',
+                'period' => '2026',
+                'is_featured' => true,
+                'is_published' => true,
+                'sort_order' => 7,
+                'technologies' => ['react', 'typescript', 'laravel', 'vite', 'tailwind-css'],
+            ],
+            [
+                'slug' => 'email-template-gallery',
+                'title' => 'Transactional Email Gallery',
+                'subtitle' => 'Plantillas HTML con branding',
+                'summary' => 'Galería de correos transaccionales anonimizados: misma estructura de plantilla, preview escritorio/móvil y variantes de marca para avisos operativos.',
+                'context' => "El producto de notificaciones envía correo además de WhatsApp. Los mensajes tienen que verse confiables en bandeja y adaptarse a marcas white-label.\n\nEste caso concentra el trabajo de plantillas HTML, jerarquía visual y variantes — sin exponer logos ni datos de clientes.",
+                'problem' => "Un correo “plano” pierde la identidad del producto y complica el soporte: el usuario no reconoce el aviso ni encuentra la acción.\n\nDuplicar HTML por marca o por evento también multiplica el mantenimiento y los errores de responsive.",
+                'solution' => "Plantillas HTML con un shell común (cabecera, cuerpo, pie) y tokens de marca (color, nombre, CTA).\n\nLas variantes cubren avisos de envío, cupo, rastreo white-label y renovación. La demo del portafolio muestra preview escritorio/móvil con contenido 100% ficticio.",
+                'responsibilities' => "Definí la estructura de las plantillas, las variantes de branding y el criterio de qué se anonimiza en el portafolio.\n\nEn producto, esas plantillas se apoyan en el mismo dominio de avisos del sistema multicanal; aquí el foco es la presentación y el preview.",
+                'technical_decisions' => "HTML tabular compatible con clientes de correo. Tokens de acento por marca en lugar de forks por cliente.\n\nEn el portafolio el preview usa iframe + srcDoc para aislar estilos del shell del sitio.",
+                'challenges' => "Que se vea bien en móvil y escritorio sin depender de CSS moderno que muchos clientes ignoran.\n\nAnonimizar por completo: sin logos reales, sin métricas de clientes, sin copy interno sensible.",
+                'results' => "Una galería clara de lo que el sistema puede mandar: el visitante ve el oficio de plantillas, no solo un log de envíos.\n\nEl patrón white-label del rastreo se refleja también en el correo.",
+                'learnings' => "La plantilla es producto: asunto, jerarquía y CTA importan tanto como el envío.\n\nSi la marca vive en datos, sumar un cliente no implica clonar el HTML.",
+                'role' => 'Full Stack Developer',
+                'period' => '2026',
+                'is_featured' => true,
+                'is_published' => true,
+                'sort_order' => 8,
+                'technologies' => ['laravel', 'php', 'react', 'typescript', 'tailwind-css'],
+            ],
+            [
+                'slug' => 'notification-billing-plans',
+                'title' => 'Notification Plans & Quotas',
+                'subtitle' => 'Planes, cupos y prorrateo',
+                'summary' => 'Capa cobrable del producto de notificaciones: planes por cliente, cupos del ciclo, upgrade a mitad de periodo con residual, renovaciones y cancelación al vencer.',
+                'context' => "Cuando el sistema de avisos pasó de “feature interna” a producto cobrable, hacía falta una capa de planes y cupos.\n\nEste case study aísla esa capa: catálogo de planes, consumo del ciclo y el cálculo de upgrade — con números inventados en la demo.",
+                'problem' => "Sin cupo ni plan, no hay forma justa de cobrar el uso ni de avisar antes del tope.\n\nUn upgrade a mitad de mes no puede cobrar el plan nuevo completo otra vez: hace falta residual/prorrateo y un cupo que refleje el plan activo.",
+                'solution' => "Modelo de planes por cliente con tope mensual, contador de uso y reglas de renovación/cancelación al vencer.\n\nEl upgrade a mitad de ciclo calcula un residual por días restantes. La demo del portafolio usa precios y cupos ficticios para mostrar el flujo sin exponer billing real.",
+                'responsibilities' => "Participé en el dominio de planes/cupos y en dejar el flujo entendible en UI: plan activo, uso del ciclo y simulación de upgrade.\n\nEl case study se conecta con Multichannel Notification System: allá está el envío; aquí, cómo se cobra y limita.",
+                'technical_decisions' => "Laravel concentra reglas de plan, cupo y residual. La UI solo presenta estado y acciones.\n\nSeparar “aviso enviado” de “unidad de cupo consumida” evita cobrar mal cuando un canal falla o se reintenta.",
+                'challenges' => "Explicar prorrateo sin abrumar, y no filtrar números reales de clientes en el portafolio.\n\nMantener la demo honesta: simulación local, sin pasarela ni cobros.",
+                'results' => "Queda visible el ownership de un producto SaaS cobrable encima del motor de avisos.\n\nQuien revisa el portafolio entiende planes, cupos y upgrade — no solo el envío por canal.",
+                'learnings' => "El cobro necesita el mismo rigor que el envío: contadores claros y reglas de ciclo explícitas.\n\nSi el residual no se explica en la UI, el upgrade se siente arbitrario.",
+                'role' => 'Full Stack Developer',
+                'period' => '2026',
+                'is_featured' => true,
+                'is_published' => true,
+                'sort_order' => 9,
+                'technologies' => ['laravel', 'php', 'react', 'typescript', 'rest-apis'],
             ],
         ];
     }

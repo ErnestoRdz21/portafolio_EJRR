@@ -45,3 +45,4 @@ test-results/
 .nova/
 .zed/
 Thumbs.db
+.tmp-img-venv/

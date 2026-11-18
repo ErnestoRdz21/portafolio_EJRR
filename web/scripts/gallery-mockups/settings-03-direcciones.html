@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="./settings.css" />
+  </head>
+  <body>
+    <div class="frame">
+      <aside class="side">
+        <h1>Ajustes</h1>
+        <p class="sub">Administra la configuración de tu cuenta.</p>
+        <div class="search">Buscar ajuste…</div>
+        <nav class="nav">
+          <div class="group">
+            <div class="label">CONFIGURACIÓN BASE</div>
+            <a href="#">Perfil</a>
+            <a href="#">Seguridad</a>
+            <a href="#">Notificaciones</a>
+            <a href="#">Mis Servicios de Envío</a>
+          </div>
+          <div class="group">
+            <div class="label">CUENTA Y ACCESO</div>
+            <a href="#">Desarrollador</a>
+            <a href="#">Administración</a>
+            <a href="#">Mi equipo</a>
+          </div>
+          <div class="group">
+            <div class="label">HERRAMIENTAS</div>
+            <a class="active" href="#">Direcciones</a>
+            <a href="#">Paquetes</a>
+            <a href="#">E-commerce</a>
+          </div>
+        </nav>
+      </aside>
+      <main class="main">
+        <h2>Direcciones</h2>
+        <p class="desc">
+          Administra direcciones de envío, plantillas y carga masiva (cuenta
+          demo).
+        </p>
+
+        <div class="stats">
+          <div class="stat"><span>Direcciones guardadas</span><b>12</b></div>
+          <div class="stat"><span>Descargar plantilla</span><b style="font-size:14px;margin-top:10px">Excel demo</b></div>
+          <div class="stat"><span>Carga masiva</span><b style="font-size:14px;margin-top:10px">Subir Excel</b></div>
+          <div class="stat" style="background:#0f766e;color:#fff;border-color:#0f766e">
+            <span style="color:#ccfbf1">Nueva dirección</span>
+            <b style="font-size:14px;margin-top:10px">Agregar</b>
+          </div>
+        </div>
+
+        <div class="stats" style="grid-template-columns: repeat(3, 1fr)">
+          <div class="stat"><span>Principal</span><b>1</b></div>
+          <div class="stat"><span>Con uso real (demo)</span><b>8</b></div>
+          <div class="stat"><span>Favoritas</span><b>2</b></div>
+        </div>
+
+        <div class="filters">
+          <span class="chip on">Todas</span>
+          <span class="chip">Principal</span>
+          <span class="chip">Más recientes</span>
+          <span class="chip">Más usadas</span>
+          <span class="chip">Excel</span>
+          <span class="chip">PDF</span>
+        </div>
+
+        <section class="card" style="padding: 0; overflow: hidden">
+          <table>
+            <thead>
+              <tr>
+                <th>ALIAS</th>
+                <th>NOMBRE</th>
+                <th>TELÉFONO</th>
+                <th>CORREO</th>
+                <th>DIRECCIÓN</th>
+                <th>ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>DEMO CASA</td>
+                <td>Ana Demo</td>
+                <td>55 1000 1001</td>
+                <td>ana.demo@ejemplo.com</td>
+                <td>Av. Ejemplo 100, CDMX</td>
+                <td>
+                  <div class="actions">
+                    <span class="dot edit">✎</span>
+                    <span class="dot home">⌂</span>
+                    <span class="dot del">✕</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>DEMO OFICINA</td>
+                <td>Carlos Ejemplo</td>
+                <td>55 1000 1002</td>
+                <td>carlos.ejemplo@ejemplo.com</td>
+                <td>Calle Prueba 220, MTY</td>
+                <td>
+                  <div class="actions">
+                    <span class="dot edit">✎</span>
+                    <span class="dot home">⌂</span>
+                    <span class="dot del">✕</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>DEMO BODEGA</td>
+                <td>María Sample</td>
+                <td>55 1000 1003</td>
+                <td>maria.sample@ejemplo.com</td>
+                <td>Parque Demo 15, GDL</td>
+                <td>
+                  <div class="actions">
+                    <span class="dot edit">✎</span>
+                    <span class="dot home">⌂</span>
+                    <span class="dot del">✕</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>DEMO QA</td>
+                <td>Luis Prueba</td>
+                <td>55 1000 1004</td>
+                <td>luis.prueba@ejemplo.com</td>
+                <td>Plaza QA 8, QRO</td>
+                <td>
+                  <div class="actions">
+                    <span class="dot edit">✎</span>
+                    <span class="dot home">⌂</span>
+                    <span class="dot del">✕</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

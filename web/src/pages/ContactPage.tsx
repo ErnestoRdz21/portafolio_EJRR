@@ -1,4 +1,5 @@
 import { Mail } from 'lucide-react'
+import { SocialLinks } from '../components/content/SocialLinks.tsx'
 import { Section } from '../components/ui/Section.tsx'
 import { SectionHeader } from '../components/ui/SectionHeader.tsx'
 import { LinkButton } from '../components/ui/LinkButton.tsx'
@@ -6,14 +7,6 @@ import { profile } from '../config/profile.ts'
 import { contactFormEnabled } from '../config/site.ts'
 import { ContactForm } from '../features/contact/ContactForm.tsx'
 import { usePageMeta } from '../seo/usePageMeta.ts'
-
-const links = [
-  profile.email
-    ? { href: `mailto:${profile.email}`, label: profile.email }
-    : null,
-  profile.linkedin ? { href: profile.linkedin, label: 'LinkedIn' } : null,
-  profile.github ? { href: profile.github, label: 'GitHub' } : null,
-].filter((item) => item !== null)
 
 export function ContactPage() {
   usePageMeta({
@@ -49,23 +42,7 @@ export function ContactPage() {
           ) : null}
         </div>
       )}
-      {links.length > 0 ? (
-        <ul className="mt-8 space-y-3">
-          {links.map((item) => (
-            <li key={item.label}>
-              <a
-                href={item.href}
-                className="focus-ring text-body text-text-primary hover:text-accent"
-                {...(item.href.startsWith('http')
-                  ? { target: '_blank', rel: 'noreferrer' }
-                  : {})}
-              >
-                {item.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      <SocialLinks className="mt-8" showEmail />
     </Section>
   )
 }

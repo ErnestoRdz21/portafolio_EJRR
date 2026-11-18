@@ -3,6 +3,7 @@ import type { LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router'
 import { Monogram } from '../../assets/branding/Monogram.tsx'
+import { SocialLinks } from '../content/SocialLinks.tsx'
 import { profile } from '../../config/profile.ts'
 import { navItems } from '../../config/site.ts'
 import { cn } from '../../utils/cn.ts'
@@ -138,33 +139,18 @@ function NavIcon({ name }: { name: string }) {
 
 function ProfileLinks() {
   return (
-    <>
-      <OptionalLink href={profile.github}>GitHub</OptionalLink>
-      <OptionalLink href={profile.linkedin}>LinkedIn</OptionalLink>
-      <OptionalLink href={profile.cvUrl}>CV</OptionalLink>
-    </>
-  )
-}
-
-function OptionalLink({
-  href,
-  children,
-}: {
-  href: string | null
-  children: string
-}) {
-  if (!href) {
-    return null
-  }
-
-  return (
-    <a
-      href={href}
-      className="focus-ring text-small text-text-secondary hover:text-text-primary"
-      target="_blank"
-      rel="noreferrer"
-    >
-      {children}
-    </a>
+    <div className="flex flex-wrap items-center gap-2">
+      <SocialLinks size="sm" />
+      {profile.cvUrl ? (
+        <a
+          href={profile.cvUrl}
+          className="focus-ring inline-flex h-9 items-center justify-center rounded-md border border-border bg-surface px-3 text-caption text-text-primary shadow-sm hover:bg-surface-secondary"
+          target="_blank"
+          rel="noreferrer"
+        >
+          CV
+        </a>
+      ) : null}
+    </div>
   )
 }

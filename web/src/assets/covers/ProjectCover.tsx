@@ -1,5 +1,7 @@
 import {
   ArrowRight,
+  Compass,
+  CreditCard,
   Mail,
   MapPin,
   MessageCircle,
@@ -15,6 +17,9 @@ const covers: Record<string, () => ReactNode> = {
   'customer-support-desk': SupportCover,
   'legacy-modernization': LegacyCover,
   'settings-spa-modernization': SettingsCover,
+  'guided-product-tours': ToursCover,
+  'email-template-gallery': EmailsCover,
+  'notification-billing-plans': PlansCover,
 }
 
 export function ProjectCover({
@@ -208,6 +213,83 @@ function SettingsCover() {
           </span>
           <span className="mt-2 block h-5 rounded-md bg-accent-soft" />
           <span className="mt-1.5 block h-4 rounded-md bg-surface-secondary" />
+        </div>
+      </div>
+    </CoverShell>
+  )
+}
+
+function ToursCover() {
+  return (
+    <CoverShell label="Tours">
+      <div className="rounded-lg border border-border bg-surface p-3 shadow-sm">
+        <div className="flex items-center gap-2">
+          <span className="grid size-8 place-items-center rounded-md bg-accent-soft text-accent">
+            <Compass className="size-4" />
+          </span>
+          <span>
+            <span className="block font-mono text-caption text-text-muted uppercase">
+              Onboarding
+            </span>
+            <span className="block text-small text-text-primary">
+              Pasos guiados en la UI
+            </span>
+          </span>
+        </div>
+        <div className="mt-3 flex gap-1.5">
+          {['1', '2', '3', '4'].map((step, index) => (
+            <span
+              key={step}
+              className={
+                index === 1
+                  ? 'grid h-6 flex-1 place-items-center rounded-md bg-accent text-caption text-background'
+                  : 'grid h-6 flex-1 place-items-center rounded-md bg-surface-secondary font-mono text-caption text-text-muted'
+              }
+            >
+              {step}
+            </span>
+          ))}
+        </div>
+      </div>
+    </CoverShell>
+  )
+}
+
+function EmailsCover() {
+  return (
+    <CoverShell label="Emails">
+      <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] gap-2">
+        <div className="rounded-lg border border-border bg-surface p-2 shadow-sm">
+          <span className="block h-1.5 w-16 rounded-sm bg-accent" />
+          <span className="mt-2 block h-1.5 rounded-sm bg-border" />
+          <span className="mt-1.5 block h-1.5 w-3/4 rounded-sm bg-border" />
+          <span className="mt-3 inline-flex items-center gap-1 rounded-md bg-accent-soft px-2 py-1 font-mono text-caption text-text-secondary">
+            <Mail className="size-3" />
+            Preview
+          </span>
+        </div>
+        <div className="rounded-lg border border-border bg-surface-secondary p-2">
+          <span className="mx-auto block h-full max-h-16 w-8 rounded-md border border-border bg-surface" />
+        </div>
+      </div>
+    </CoverShell>
+  )
+}
+
+function PlansCover() {
+  return (
+    <CoverShell label="Billing">
+      <div className="rounded-lg border border-border bg-surface p-3 shadow-sm">
+        <div className="flex items-center gap-2 text-small text-text-primary">
+          <CreditCard className="size-4 text-accent" />
+          Planes y cupos
+        </div>
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-secondary">
+          <span className="block h-full w-2/3 rounded-full bg-accent" />
+        </div>
+        <div className="mt-2 flex justify-between font-mono text-caption text-text-muted">
+          <span>310 / 500</span>
+          <span>Upgrade</span>
         </div>
       </div>
     </CoverShell>

@@ -1,6 +1,6 @@
 import { Mail } from 'lucide-react'
 import { useCallback } from 'react'
-import { profile } from '../../config/profile.ts'
+import { SocialLinks } from '../../components/content/SocialLinks.tsx'
 import { LinkButton } from '../../components/ui/LinkButton.tsx'
 import { Section } from '../../components/ui/Section.tsx'
 import { useRemoteData } from '../../hooks/useRemoteData.ts'
@@ -31,36 +31,7 @@ export function ContactCta() {
             Ir a contacto
           </LinkButton>
         </div>
-        <div className="mt-6 flex flex-wrap gap-4">
-          {profile.email ? (
-            <a
-              href={`mailto:${profile.email}`}
-              className="focus-ring text-small text-text-secondary hover:text-text-primary"
-            >
-              Email
-            </a>
-          ) : null}
-          {profile.github ? (
-            <a
-              href={profile.github}
-              className="focus-ring text-small text-text-secondary hover:text-text-primary"
-              target="_blank"
-              rel="noreferrer"
-            >
-              GitHub
-            </a>
-          ) : null}
-          {profile.linkedin ? (
-            <a
-              href={profile.linkedin}
-              className="focus-ring text-small text-text-secondary hover:text-text-primary"
-              target="_blank"
-              rel="noreferrer"
-            >
-              LinkedIn
-            </a>
-          ) : null}
-        </div>
+        <SocialLinks className="mt-6" showEmail />
       </div>
     </Section>
   )
