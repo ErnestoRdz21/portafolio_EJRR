@@ -1,5 +1,5 @@
 import { asNullableString, asRecord, raise } from '../lib/rows.ts'
-import { bindSignal, getSupabase } from '../lib/supabase.ts'
+import { getSupabase } from '../lib/supabase.ts'
 import { aboutCopy as fallbackAbout } from '../features/home/engineering.ts'
 import type { EducationItem, ExperienceRole } from '../config/profile.ts'
 import { profile } from '../config/profile.ts'
@@ -23,14 +23,16 @@ const COLUMNS =
 export async function getSiteContent(
   signal?: AbortSignal,
 ): Promise<SiteContent> {
-  const { data, error } = await bindSignal(
-    getSupabase()
-      .from('site_content')
-      .select(COLUMNS)
-      .eq('id', 1)
-      .maybeSingle(),
-    signal,
-  )
+  let query = getSupabase()
+    .from('site_content')
+    .select(COLUMNS)
+    .eq('id', 1)
+
+  if (signal) {
+    query = query.abortSignal(signal)
+  }
+
+  const { data, error } = await query.maybeSingle()
 
   raise(error, signal)
 

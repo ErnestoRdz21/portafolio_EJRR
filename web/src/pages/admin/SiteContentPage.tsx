@@ -79,6 +79,11 @@ export function SiteContentPage() {
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()
+    if (!draft) {
+      return
+    }
+
+    const current = draft
     setFields({})
     setNotice('')
     setError('')
@@ -90,15 +95,16 @@ export function SiteContentPage() {
         .filter(Boolean)
 
       const saved = await saveAdminSiteContent({
-        ...draft,
-        hero_eyebrow: emptyToNull(draft.hero_eyebrow ?? ''),
-        hero_body: emptyToNull(draft.hero_body ?? ''),
-        hero_body_secondary: emptyToNull(draft.hero_body_secondary ?? ''),
-        about_title: emptyToNull(draft.about_title ?? ''),
-        about_description: emptyToNull(draft.about_description ?? ''),
+        experience_json: current.experience_json,
+        education_json: current.education_json,
+        hero_eyebrow: emptyToNull(current.hero_eyebrow ?? ''),
+        hero_body: emptyToNull(current.hero_body ?? ''),
+        hero_body_secondary: emptyToNull(current.hero_body_secondary ?? ''),
+        about_title: emptyToNull(current.about_title ?? ''),
+        about_description: emptyToNull(current.about_description ?? ''),
         about_paragraphs: paragraphs,
-        work_description: emptyToNull(draft.work_description ?? ''),
-        contact_description: emptyToNull(draft.contact_description ?? ''),
+        work_description: emptyToNull(current.work_description ?? ''),
+        contact_description: emptyToNull(current.contact_description ?? ''),
       })
       const next = toDraft(saved)
       setDraft(next)
